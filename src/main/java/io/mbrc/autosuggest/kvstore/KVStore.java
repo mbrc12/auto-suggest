@@ -47,6 +47,8 @@ public class KVStore {
         String repr = redisValueOperations.get(key);
         if (repr == null) {
             repr = persistenceTask.query(key);
+            // Since this failed, reinsert into redis
+            redisValueOperations.set(key, repr);
         }
 
         return gson.fromJson(repr, clazz);

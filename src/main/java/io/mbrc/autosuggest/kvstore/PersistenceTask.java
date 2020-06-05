@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 @Component
 public class PersistenceTask implements DisposableBean {
 
-    private final KVStoreConfig config;
-
     private final MongoClient mongoClient;
     private final String persistDb;
     private final String persistCollection;
@@ -45,7 +43,6 @@ public class PersistenceTask implements DisposableBean {
     @Autowired
     PersistenceTask (MongoClient mongoClient, KVStoreConfig config) {
 
-        this.config = config;
 
         log.info("DB = {}", config.getPersistDb());
         log.info("Coll = {}", config.getPersistCollection());
