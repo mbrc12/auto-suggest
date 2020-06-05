@@ -2,6 +2,7 @@ package io.mbrc.autosuggest.kvstore;
 
 import com.google.gson.Gson;
 import lombok.Data;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ public class KVStore {
         this.persistenceTask = persistenceTask;
     }
 
+    @Synchronized
     public <T> void insert (String key, T value) throws InterruptedException {
         String repr = gson.toJson(value);
         log.debug("Repr = {}", repr);
@@ -45,21 +47,20 @@ public class KVStore {
 
     public <T> T query (String key, Class<T> clazz) {
         String repr = redisValueOperations.get(key);
+
         if (repr == null) {
-            repr = persistenceTask.query(key);
-            // Since this failed, reinsert into redis
+            synchronized (persistenceTask) {
+                repr = persistenceTask.query(key);
+            }
+
             redisValueOperations.set(key, repr);
         }
 
         return gson.fromJson(repr, clazz);
     }
 
+    @Synchronized
     public void shutdown () throws Exception {
         persistenceTask.destroy();
-    }
-
-    @Data
-    public static class Greet {
-        private String name;
     }
 }
