@@ -21,6 +21,8 @@ public class KVStore {
     private final ValueOperations<String, String> redisValueOperations;
     private final PersistenceTask persistenceTask;
 
+    private final Object mutex = new Object();
+
     @Autowired
     KVStore (Gson gson, RedisConnectionFactory redisConnectionFactory, PersistenceTask persistenceTask) {
         this.gson = gson;
@@ -49,11 +51,10 @@ public class KVStore {
         String repr = redisValueOperations.get(key);
 
         if (repr == null) {
-            synchronized (persistenceTask) {
+            synchronized (mutex) {
                 repr = persistenceTask.query(key);
+                redisValueOperations.set(key, repr);
             }
-
-            redisValueOperations.set(key, repr);
         }
 
         return gson.fromJson(repr, clazz);
