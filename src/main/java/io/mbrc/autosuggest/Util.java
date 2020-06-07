@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Util {
 
-    public static <T> List<List<T>> ordered_combinations_upto (List<T> list, int K) {
+    public static <T> List<List<T>> orderedCombinationsUpto(List<T> list, int K) {
         if (K == 0) return Collections.emptyList();
 
         ArrayList<T> arrayList = new ArrayList<>(list);

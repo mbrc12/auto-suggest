@@ -24,7 +24,9 @@ public class KVStore {
     private final Object mutex = new Object();
 
     @Autowired
-    KVStore (Gson gson, RedisConnectionFactory redisConnectionFactory, PersistenceTask persistenceTask) {
+    KVStore (Gson gson,
+             RedisConnectionFactory redisConnectionFactory,
+             PersistenceTask persistenceTask) {
         this.gson = gson;
 
         this.redisTemplate = new RedisTemplate<>();
@@ -38,13 +40,14 @@ public class KVStore {
         this.persistenceTask = persistenceTask;
     }
 
-    @Synchronized
     public <T> void insert (String key, T value) throws InterruptedException {
         String repr = gson.toJson(value);
         log.debug("Repr = {}", repr);
 
-        redisValueOperations.set(key, repr);
-        persistenceTask.insert(key, repr);
+        synchronized (mutex) {
+            redisValueOperations.set(key, repr);
+            persistenceTask.insert(key, repr);
+        }
     }
 
     public <T> T query (String key, Class<T> clazz) {
@@ -52,10 +55,16 @@ public class KVStore {
 
         if (repr == null) {
             synchronized (mutex) {
-                repr = persistenceTask.query(key);
-                redisValueOperations.set(key, repr);
+                repr = redisValueOperations.get(key);
+                if (repr == null) {
+                    repr = persistenceTask.query(key);
+                    if (repr != null)
+                        redisValueOperations.set(key, repr);
+                }
             }
         }
+
+        if (repr == null) return null;
 
         return gson.fromJson(repr, clazz);
     }

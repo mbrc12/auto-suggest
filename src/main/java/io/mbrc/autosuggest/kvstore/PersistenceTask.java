@@ -1,9 +1,11 @@
 package io.mbrc.autosuggest.kvstore;
 
 import com.mongodb.MongoException;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -41,7 +43,8 @@ public class PersistenceTask implements DisposableBean {
     private final ConcurrentHashMap<String, String> temporaryCache;
 
     @Autowired
-    PersistenceTask (MongoClient mongoClient, KVStoreConfig config) {
+    PersistenceTask (MongoClient mongoClient,
+                     KVStoreConfig config) {
 
 
         log.info("DB = {}", config.getPersistDb());
@@ -137,6 +140,7 @@ public class PersistenceTask implements DisposableBean {
     // or overwritten. This method should run really fast, and possibility with
     // zero blocking. The underlying implementation of the queue is LinkedBlockingDeque
     // which shouldn't block on a `putLast`
+
     public void insert (String key, String value) throws InterruptedException {
         temporaryCache.put(key, value);
         queue.putLast(Pair.of(prefixed(key), value));
@@ -151,8 +155,10 @@ public class PersistenceTask implements DisposableBean {
 
         Bson filter = Filters.eq("_id", prefixed(key));
 
-        for (Document doc : mongoCollection.find(filter)) {
-            return (String) doc.get("value"); // even if there is one, return
+        synchronized (mongoCollection) {
+            for (Document doc : mongoCollection.find(filter)) {
+                return (String) doc.get("value"); // even if there is one, return
+            }
         }
 
         return null;

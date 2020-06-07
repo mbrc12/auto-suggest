@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static io.mbrc.autosuggest.Util.ordered_combinations_upto;
+import static io.mbrc.autosuggest.Util.orderedCombinationsUpto;
 
 @Slf4j
 @Component
@@ -32,7 +32,7 @@ public class CLI implements CommandLineRunner{
 //
 
         List<Integer> list = List.of(1, 2, 3);
-        for (List<Integer> comb : ordered_combinations_upto(list, 2)) {
+        for (List<Integer> comb : orderedCombinationsUpto(list, 2)) {
             log.info("--> {}", comb.toString());
         }
 

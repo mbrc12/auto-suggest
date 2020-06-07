@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static io.mbrc.autosuggest.Util.ordered_combinations_upto;
+import static io.mbrc.autosuggest.Util.orderedCombinationsUpto;
 
 @Slf4j
 @Component
@@ -84,7 +84,11 @@ public class IngestTask {
             words.add(word);
         }
 
-        return ordered_combinations_upto(words, config.getMaxWordsInPhrase());
+        return orderedCombinationsUpto(words, config.getMaxWordsInPhrase());
+    }
+
+    public void submit (String doc) throws InterruptedException {
+        queue.putLast(doc);
     }
 
     @Synchronized
