@@ -5,6 +5,7 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -60,7 +61,9 @@ public class IngestTask {
                     finishLatch.countDown();
                     return;
                 }
-                List<List<String>> phrases = analyzeToPhrases(item);
+                Pair<List<String>, List<LinkedList<String>>> wordsAndphrases = analyzeToPhrases(item);
+                List<String> words = wordsAndphrases.getFirst();
+                List<LinkedList<String>> phrases = wordsAndphrases.getSecond();
             } catch (InterruptedException e) {
                 log.error("Worker thread interrupted.");
                 e.printStackTrace();
@@ -72,7 +75,7 @@ public class IngestTask {
     // Remove all punctuation, tokenize into words, convert to lower
     // case, and return all possible k-letter phrases in-order.
 
-    private List<List<String>> analyzeToPhrases (String data) {
+    private Pair<List<String>, List<LinkedList<String>>> analyzeToPhrases (String data) {
         StringTokenizer tokenizer = new StringTokenizer(data, delimiters);
         List<String> words = new ArrayList<>();
 
@@ -84,7 +87,9 @@ public class IngestTask {
             words.add(word);
         }
 
-        return orderedCombinationsUpto(words, config.getMaxWordsInPhrase());
+        return Pair.of(
+                words,
+                orderedCombinationsUpto(words, config.getMaxWordsInPhrase()));
     }
 
     public void submit (String doc) throws InterruptedException {
