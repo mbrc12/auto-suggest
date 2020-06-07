@@ -40,13 +40,18 @@ public class KVStore {
         this.persistenceTask = persistenceTask;
     }
 
-    public <T> void insert (String key, T value) throws InterruptedException {
+    public <T> void insert (String key, T value) {
         String repr = gson.toJson(value);
         log.debug("Repr = {}", repr);
 
         synchronized (mutex) {
             redisValueOperations.set(key, repr);
-            persistenceTask.insert(key, repr);
+            try {
+                persistenceTask.insert(key, repr);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Interrupted by user.");
+            }
         }
     }
 
