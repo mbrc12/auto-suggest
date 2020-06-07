@@ -194,7 +194,7 @@ public class PopularityTrie <T> {
     }
 
     private String prefixed (String val) {
-        return prefix + val;
+        return prefix + ":" + val;
     }
 
     private String prefixed (Integer val) {
@@ -225,7 +225,7 @@ public class PopularityTrie <T> {
     public enum InsertType {
 
         OCCURRENCE,
-        SELECTION;
+        SELECTION
     }
 
     public int incrementOf (InsertType insertType) {

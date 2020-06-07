@@ -1,6 +1,7 @@
 package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.kvstore.KVStore;
+import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +32,14 @@ public class CLI implements CommandLineRunner{
 ////        }
 //
 
-        List<Integer> list = List.of(1, 2, 3);
-        for (List<Integer> comb : orderedCombinationsUpto(list, 2)) {
-            log.info("--> {}", comb.toString());
-        }
+//        List<Integer> list = List.of(1, 2, 3);
+//        for (List<Integer> comb : orderedCombinationsUpto(list, 2)) {
+//            log.info("--> {}", comb.toString());
+//        }
+//
+//        kvStore.shutdown();
+//        ingestTask.shutdown();
 
-        kvStore.shutdown();
-        ingestTask.shutdown();
     }
 
     @Data
