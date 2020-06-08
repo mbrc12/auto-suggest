@@ -2,7 +2,6 @@ package io.mbrc.autosuggest.poptrie;
 
 import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.kvstore.KVStore;
-import lombok.Data;
 import lombok.Synchronized;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static io.mbrc.autosuggest.Util.*;
 
 // IMPORTANT: All T's used should have a good support for
 // HashMap keys and Gson serialization. The expected
@@ -20,15 +20,27 @@ import java.util.stream.Collectors;
 // unique prefix, ensuring that no-other keys in your application
 // ends up having this prefix.
 
+// Implementation note: All write functions that are callable directly
+// by the outside world, are synchronized on a shared mutex. This is
+// to enable that these operations are sequential. As a result, we
+// do not need to make the remaining operations synchronized.
+
+/* TODO: Currently we sync all operations from the outside, essentially making this
+    single threaded. But most reads can probably be done without blocking.
+*/
+
+/* TODO: Rewrite this whole thing using Optional<T> like PopularityMap
+ */
+
 @Slf4j
 public class PopularityTrie <T> {
 
     private final static Integer startingPopularity = 0;
     private final static String currentIdKey = "currentId";
 
-    private final Integer occurrenceIncrement;
-    private final Integer selectionIncrement;
-    private final Integer maxRank;
+    private final int occurrenceIncrement;
+    private final int selectionIncrement;
+    private final int maxRank;
     private final Type nodeType;
 
     private final KVStore kvStore;
@@ -40,9 +52,9 @@ public class PopularityTrie <T> {
 
     private PopularityTrie (KVStore kvStore,
                     String prefix,
-                    Integer occurrenceIncrement,
-                    Integer selectionIncrement,
-                    Integer maxRank) {
+                    int occurrenceIncrement,
+                    int selectionIncrement,
+                    int maxRank) {
 
         this.kvStore = kvStore;
         this.prefix = prefix;
@@ -175,7 +187,7 @@ public class PopularityTrie <T> {
     }
 
     // Lock on mutex, before calling this method
-    public List<T> pathOf (int index) {
+    private List<T> pathOf (int index) {
         LinkedList<T> path = new LinkedList<>();
         Node<T> node = getNode(index);
         while (node.getParent() >= 0) {
@@ -188,25 +200,25 @@ public class PopularityTrie <T> {
 
     private List<Completion<T>> completionsOfIndex (int index) {
         Node<T> node = getNode(index);
-        synchronized (mutex) {
-            return node.getCompletions()
-                    .stream()
-                    .map(completion -> {
-                        int hits = completion.getLeft();
-                        int nodeIdx = completion.getRight();
-                        List<T> path = pathOf(nodeIdx);
-                        return new Completion<>(hits, path);
-                    })
-                    .collect(Collectors.toList());
-        }
+        return node.getCompletions()
+                .stream()
+                .map(completion -> {
+                    int hits = completion.getLeft();
+                    int nodeIdx = completion.getRight();
+                    List<T> path = pathOf(nodeIdx);
+                    return new Completion<>(hits, path);
+                })
+                .collect(Collectors.toList());
     }
 
     // TODO: This is wasteful. We can traverse the remaining path for each completion.
     // Returns the completions of a given path as follows: list of (hits of that path, the path)
     public List<Completion<T>> completionsOfPath (List<T> path) {
-        Integer index = getFinalNode(path);
-        if (index == null) return Collections.emptyList();
-        return completionsOfIndex(index);
+        synchronized (mutex) {
+            Integer index = getFinalNode(path);
+            if (index == null) return Collections.emptyList();
+            return completionsOfIndex(index);
+        }
     }
 
     private String prefixed (String val) {
@@ -223,12 +235,6 @@ public class PopularityTrie <T> {
     public static class Completion<T> {
         int score;
         List<T> path;
-    }
-
-    public enum InsertType {
-
-        OCCURRENCE,
-        SELECTION
     }
 
     private int incrementOf (InsertType insertType) {

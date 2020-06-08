@@ -74,12 +74,17 @@ public class KVStore {
         return repr;
     }
 
+    /*
+       TODO: Configure these to return Optional<T> instead of (T or null). Node that this will require
+        a lot of refactoring.
+     */
     public <T> T query (String key, Class<T> clazz) {
         String repr = query(key);
         if (repr == null) return null;
         return gson.fromJson(repr, clazz);
     }
 
+    // TODO: Same as the above query method
     public <T> T query (String key, Type type) {
         String repr = query(key);
         if (repr == null) return null;

@@ -11,6 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.*;
 import static io.mbrc.autosuggest.poptrie.PopularityTrie.*;
+import static io.mbrc.autosuggest.Util.*;
 
 @Component
 @SpringBootTest
@@ -53,6 +54,6 @@ public class PopTrieTest {
         popularityTrie.insert(List.of("covid", "india", "modi"), InsertType.SELECTION);
         List<Completion<String>> ans = popularityTrie.completionsOfPath(List.of("covid"));
         assertTrue(ans.size() >= 2);
-        assertEquals(ans.get(0).getScore(), 3); // occurence + selection
+        assertEquals(3, ans.get(0).getScore() / ans.get(1).getScore()); // ratio should be 3 always
     }
 }

@@ -29,4 +29,8 @@ public class Util {
         return combinations;
     }
 
+    public enum InsertType {
+        OCCURRENCE,
+        SELECTION
+    }
 }
