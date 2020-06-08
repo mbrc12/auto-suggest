@@ -1,7 +1,6 @@
 package io.mbrc.autosuggest.poptrie;
 
 import lombok.Data;
-import lombok.Synchronized;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -31,8 +30,7 @@ public class Node<T> {
         return next.get(edge);
     }
 
-    @Synchronized
-    void addCompletion (int val, int node, int maxRank) {
+    synchronized void addCompletion (int val, int node, int maxRank) {
         IntPair paired = IntPair.of(val, node);
         boolean done = false;
 

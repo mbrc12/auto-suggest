@@ -39,7 +39,20 @@ public class PopTrieTest {
                 (kvStore, "pop-2", 1, 2, 4);
         assertNotNull(popularityTrie);
         popularityTrie.insert(List.of("covid", "india", "donald"), InsertType.OCCURRENCE);
-//        List<Completion<String>> ans = popularityTrie.completionsOfPath(List.of("covid"));
-//        assertTrue(ans.size() >= 1);
+        List<Completion<String>> ans = popularityTrie.completionsOfPath(List.of("covid"));
+        assertTrue(ans.size() >= 1);
+    }
+
+    @Test
+    public void popTrie2 () {
+        PopularityTrie<String> popularityTrie = PopularityTrie.getInstance
+                (kvStore, "pop-3", 1, 2, 4);
+        assertNotNull(popularityTrie);
+        popularityTrie.insert(List.of("covid", "india", "donald"), InsertType.OCCURRENCE);
+        popularityTrie.insert(List.of("covid", "india", "modi"), InsertType.OCCURRENCE);
+        popularityTrie.insert(List.of("covid", "india", "modi"), InsertType.SELECTION);
+        List<Completion<String>> ans = popularityTrie.completionsOfPath(List.of("covid"));
+        assertTrue(ans.size() >= 2);
+        assertEquals(ans.get(0).getScore(), 3); // occurence + selection
     }
 }

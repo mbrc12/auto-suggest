@@ -30,6 +30,8 @@ public class KVStoreTest {
         assertEquals(kvStore.query("test:a", String.class), "Wow");
     }
 
+    // This next test takes up a lot of time (~10s on my machine).
+    // Uncomment the @Test annotation if you want to check this.
 //    @Test
     public void multiThread1 () throws InterruptedException {
         int N = 100000;
