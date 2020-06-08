@@ -1,13 +1,14 @@
 package io.mbrc.autosuggest.poptrie;
 
+import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.kvstore.KVStore;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Synchronized;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.util.Pair;
 
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,15 +29,16 @@ public class PopularityTrie <T> {
     private final Integer occurrenceIncrement;
     private final Integer selectionIncrement;
     private final Integer maxRank;
+    private final Type nodeType;
 
     private final KVStore kvStore;
     private final String prefix;
-    private final Integer rootIdx;
-    private final AtomicInteger currentId;
+    private Integer rootIdx;
+    private AtomicInteger currentId;
 
     private final Object mutex = new Object();
 
-    PopularityTrie (KVStore kvStore,
+    private PopularityTrie (KVStore kvStore,
                     String prefix,
                     Integer occurrenceIncrement,
                     Integer selectionIncrement,
@@ -47,10 +49,13 @@ public class PopularityTrie <T> {
         this.occurrenceIncrement = occurrenceIncrement;
         this.selectionIncrement = selectionIncrement;
         this.maxRank = maxRank;
+        this.nodeType = new TypeToken<Node<T>>(){}.getType();
+    }
 
-        // Check if the currentId has already been stored. If yes, then
-        // this structure had already been present in the last iteration
+    // Check if the currentId has already been stored. If yes, then
+    // this structure had already been present in the last iteration
 
+    private void postConstruct () {
         Integer oldId = kvStore.query(prefixed(currentIdKey), Integer.class);
 
         if (oldId != null) {
@@ -70,6 +75,17 @@ public class PopularityTrie <T> {
         }
     }
 
+    public static <T> PopularityTrie<T> getInstance(KVStore kvStore,
+                                                    String prefix,
+                                                    Integer occurrenceIncrement,
+                                                    Integer selectionIncrement,
+                                                    Integer maxRank) {
+        PopularityTrie<T> tree = new PopularityTrie<>
+                (kvStore, prefix, occurrenceIncrement, selectionIncrement, maxRank);
+        tree.postConstruct();
+        return tree;
+    }
+
     @Synchronized
     private int nextIndex () {
         int index = currentId.incrementAndGet();
@@ -78,24 +94,24 @@ public class PopularityTrie <T> {
     }
 
     private int registerNewNode (int parent, T edgeFrom) {
-        Node node = new Node(parent, edgeFrom, startingPopularity);
+        Node<T> node = new Node<>(parent, edgeFrom, startingPopularity);
         int index = nextIndex();
         kvStore.insert(prefixed(index), node);
         return index;
     }
 
-    private Node getNode (int index) {
-        return kvStore.query(prefixed(index), Node.class);
+    private Node<T> getNode (int index) {
+        return kvStore.query(prefixed(index), nodeType);
     }
 
-    private void putNode (Node node, int index) {
+    private void putNode (Node<T> node, int index) {
         kvStore.insert(prefixed(index), node);
     }
 
     // Need not synchronise this, because the caller insert is synchronized on mutex
     // The returned pair is (Final Node's popularity, Final Node's index)
     private IntPair insert (ListIterator<T> iter, int nodeIdx, InsertType insertType) {
-        Node node = getNode(nodeIdx);
+        Node<T> node = getNode(nodeIdx);
 
         if (node == null) {
             throw new IllegalStateException("Current node can never be null");
@@ -114,7 +130,7 @@ public class PopularityTrie <T> {
             int finalPopularity = finalParams.getLeft();
             int finalIdx = finalParams.getRight();
 
-            node.addCompletion(finalPopularity, finalIdx);
+            node.addCompletion(finalPopularity, finalIdx, maxRank);
 
             putNode(node, nodeIdx);
 
@@ -134,7 +150,7 @@ public class PopularityTrie <T> {
 
     // Get the final node on the path, null if this path is not in trie
     private Integer getFinalNode (ListIterator<T> iter, int nodeIdx) {
-        Node node = getNode(nodeIdx);
+        Node<T> node = getNode(nodeIdx);
 
         if (node == null) {
             throw new IllegalStateException("Current node can never be null");
@@ -161,7 +177,7 @@ public class PopularityTrie <T> {
     // Lock on mutex, before calling this method
     public List<T> pathOf (int index) {
         LinkedList<T> path = new LinkedList<>();
-        Node node = getNode(index);
+        Node<T> node = getNode(index);
         while (node.getParent() >= 0) {
             T edge = node.getEdgeFrom();
             path.addFirst(edge);
@@ -170,8 +186,8 @@ public class PopularityTrie <T> {
         return path;
     }
 
-    private List<Pair<Integer, List<T>>> completionsOfIndex (int index) {
-        Node node = getNode(index);
+    private List<Completion<T>> completionsOfIndex (int index) {
+        Node<T> node = getNode(index);
         synchronized (mutex) {
             return node.getCompletions()
                     .stream()
@@ -179,7 +195,7 @@ public class PopularityTrie <T> {
                         int hits = completion.getLeft();
                         int nodeIdx = completion.getRight();
                         List<T> path = pathOf(nodeIdx);
-                        return Pair.of(hits, path);
+                        return new Completion<>(hits, path);
                     })
                     .collect(Collectors.toList());
         }
@@ -187,7 +203,7 @@ public class PopularityTrie <T> {
 
     // TODO: This is wasteful. We can traverse the remaining path for each completion.
     // Returns the completions of a given path as follows: list of (hits of that path, the path)
-    public List<Pair<Integer, List<T>>> completionsOfPath (List<T> path) {
+    public List<Completion<T>> completionsOfPath (List<T> path) {
         Integer index = getFinalNode(path);
         if (index == null) return Collections.emptyList();
         return completionsOfIndex(index);
@@ -201,34 +217,21 @@ public class PopularityTrie <T> {
         return prefixed(val.toString());
     }
 
-    @AllArgsConstructor
-    @Data
-    private static class IntPair {
-        int left;
-        int right;
-
-        public static IntPair of (int left, int right) {
-            return new IntPair(left, right);
-        }
-
-        public static int reverseComparator (IntPair x, IntPair y) {
-            int comp = Integer.compare(y.getLeft(), x.getLeft());
-            if (comp == 0)
-                return Integer.compare(x.getRight(), y.getRight());
-            return comp;
-        }
-    }
-
     // TODO: Reanalyse later if an LinkedList is the correct implementation
 
-    @AllArgsConstructor
+    @Value
+    public static class Completion<T> {
+        int score;
+        List<T> path;
+    }
+
     public enum InsertType {
 
         OCCURRENCE,
         SELECTION
     }
 
-    public int incrementOf (InsertType insertType) {
+    private int incrementOf (InsertType insertType) {
         switch (insertType) {
             case SELECTION: return selectionIncrement;
             case OCCURRENCE: return occurrenceIncrement;
@@ -236,53 +239,4 @@ public class PopularityTrie <T> {
         throw new RuntimeException("Cannot reach here as switch cases are exhaustive");
     }
 
-    @Data
-    public class Node {
-        ConcurrentHashMap<T, Integer> next;
-        LinkedList<IntPair> completions;
-        final int parent;
-        int popularity;
-        T edgeFrom;
-
-        Node (int parent, T edgeFrom, int startingPopularity) {
-            this.completions = new LinkedList<>();
-            this.edgeFrom = edgeFrom;
-            this.parent = parent;
-            this.popularity = startingPopularity;
-            this.next = new ConcurrentHashMap<>();
-        }
-
-        public void putNext (T edge, int node) {
-            next.put(edge, node);
-        }
-
-        public Integer getNext (T edge) {
-            return next.get(edge);
-        }
-
-        @Synchronized
-        void addCompletion (int val, int node) {
-            IntPair paired = IntPair.of(val, node);
-            boolean done = false;
-
-            ListIterator<IntPair> iter = completions.listIterator();
-
-            while (iter.hasNext() && !done) {
-                IntPair item = iter.next();
-                if (item.getRight() == node) {
-                    item.setLeft(val);
-                    done = true;
-                }
-            }
-
-            if (!done) {
-                completions.add(paired);
-            }
-
-            completions.sort(IntPair::reverseComparator);
-
-            while (completions.size() > maxRank)
-                completions.pollLast();
-        }
-    }
 }

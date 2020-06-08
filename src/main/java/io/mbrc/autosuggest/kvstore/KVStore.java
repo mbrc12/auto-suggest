@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Type;
+
 @Slf4j
 @Component
 public class KVStore {
@@ -55,7 +57,7 @@ public class KVStore {
         }
     }
 
-    public <T> T query (String key, Class<T> clazz) {
+    private String query (String key) {
         String repr = redisValueOperations.get(key);
 
         if (repr == null) {
@@ -69,9 +71,19 @@ public class KVStore {
             }
         }
 
-        if (repr == null) return null;
+        return repr;
+    }
 
+    public <T> T query (String key, Class<T> clazz) {
+        String repr = query(key);
+        if (repr == null) return null;
         return gson.fromJson(repr, clazz);
+    }
+
+    public <T> T query (String key, Type type) {
+        String repr = query(key);
+        if (repr == null) return null;
+        return gson.fromJson(repr, type);
     }
 
     @Synchronized

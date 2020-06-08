@@ -30,7 +30,7 @@ public class KVStoreTest {
         assertEquals(kvStore.query("test:a", String.class), "Wow");
     }
 
-    @Test
+//    @Test
     public void multiThread1 () throws InterruptedException {
         int N = 100000;
         String prefix = "multiThread1-1:";

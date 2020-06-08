@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.*;
+import static io.mbrc.autosuggest.poptrie.PopularityTrie.*;
 
 @Component
 @SpringBootTest
@@ -30,5 +31,15 @@ public class PopTrieTest {
     public void helperTestForInverses2() {
         List<Character> original = List.of('H', 'e', 'l', 'l', 'o', '!');
         assertEquals(original.toString(), asCharacterList(asString(original)).toString());
+    }
+
+    @Test
+    public void popTrie1 () {
+        PopularityTrie<String> popularityTrie = PopularityTrie.getInstance
+                (kvStore, "pop-2", 1, 2, 4);
+        assertNotNull(popularityTrie);
+        popularityTrie.insert(List.of("covid", "india", "donald"), InsertType.OCCURRENCE);
+//        List<Completion<String>> ans = popularityTrie.completionsOfPath(List.of("covid"));
+//        assertTrue(ans.size() >= 1);
     }
 }
