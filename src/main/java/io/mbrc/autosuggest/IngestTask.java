@@ -1,6 +1,7 @@
 package io.mbrc.autosuggest;
 
-import io.mbrc.autosuggest.kvstore.KVStore;
+import io.mbrc.autosuggest.popmap.PopularityMap;
+import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,22 +18,33 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static io.mbrc.autosuggest.Util.orderedCombinationsUpto;
+import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
 
 @Slf4j
 @Component
 public class IngestTask {
 
+    private final PopularityMap<String> fuzzyCorrectMap;
+    private final PopularityTrie<Character> wordCompleteTrie;
+    private final PopularityTrie<String> tagSuggestTrie;
+
     private final AppConfig config;
-    private final KVStore kvStore;
     private final BlockingDeque<String> queue;
     private final Set<String> ignoredWords;
     private final String delimiters;
     private final CountDownLatch finishLatch;
 
     @Autowired
-    IngestTask (KVStore kvStore, AppConfig config) throws IOException {
+    IngestTask (PopularityMap<String> fuzzyCorrectMap,
+                PopularityTrie<Character> wordCompleteTrie,
+                PopularityTrie<String> tagSuggestTrie,
+                AppConfig config) throws IOException {
+
+        this.fuzzyCorrectMap = fuzzyCorrectMap;
+        this.wordCompleteTrie = wordCompleteTrie;
+        this.tagSuggestTrie = tagSuggestTrie;
+
         this.config = config;
-        this.kvStore = kvStore;
         this.queue = new LinkedBlockingDeque<>();
         this.ignoredWords = new HashSet<>();
 
@@ -64,6 +76,14 @@ public class IngestTask {
                 Pair<List<String>, List<LinkedList<String>>> wordsAndphrases = analyzeToPhrases(item);
                 List<String> words = wordsAndphrases.getFirst();
                 List<LinkedList<String>> phrases = wordsAndphrases.getSecond();
+
+                words.forEach(word -> fuzzyCorrectMap.insert(word, Util.InsertType.OCCURRENCE));
+
+                words.forEach(
+                        word -> wordCompleteTrie.insert(asCharacterList(word), Util.InsertType.OCCURRENCE));
+
+                phrases.forEach(phrase -> tagSuggestTrie.insert(phrase, Util.InsertType.OCCURRENCE));
+
             } catch (InterruptedException e) {
                 log.error("Worker thread interrupted.");
                 e.printStackTrace();
