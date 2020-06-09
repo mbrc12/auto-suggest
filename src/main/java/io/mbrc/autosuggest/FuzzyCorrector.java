@@ -11,39 +11,45 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
+
+import static io.mbrc.autosuggest.Util.editDistance;
 
 @Slf4j
 @Component
 public class FuzzyCorrector {
 
     private final PopularityMap<String> fuzzyCorrectMap;
-    private final Soundex soundex;
+    private final Function<String, String> hashFunction;
 
     private final AppConfig appConfig;
 
     @Autowired
     FuzzyCorrector (PopularityMap<String> fuzzyCorrectMap,
-                    Soundex soundex,
+                    Function<String, String> hashFunction,
                     AppConfig appConfig) {
 
         this.fuzzyCorrectMap = fuzzyCorrectMap;
-        this.soundex = soundex;
+        this.hashFunction = hashFunction;
         this.appConfig = appConfig;
     }
 
-    public List<Suggestion<String>> correct (String word) {
-        String encoded = soundex.encode(word);
-        assert encoded.length() == 4;
+    public List<String> correct (String word) {
+        String encoded = hashFunction.apply(word);
 
         Suggestions<String> suggestions = fuzzyCorrectMap.getSuggestions(encoded);
 
         if (suggestions.getSuggestions().isEmpty())
             return Collections.emptyList();
 
-        List<Suggestion<String>> results = new LinkedList<>();
+        List<String> results = new LinkedList<>();
+        results.add(word);
 
         for (Suggestion<String> suggestion : suggestions.getSuggestions()) {
-
+            String fixed = suggestion.getItem();
+            if (editDistance(fixed, word) <= appConfig.getMaxFuzzyDistance()) {
+                results.add(fixed);
+            }
         }
 
         return results;

@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.function.Function;
+
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "app")
@@ -17,19 +19,23 @@ public class AppConfig {
     private Integer maxWordsInPhrase;
     private String ingestFinishSymbol;
 
-    public @Bean Soundex soundex () {
-        return new Soundex();
+    private Integer maxFuzzyDistance;
+
+    public @Bean
+    Function<String, String> hashFunction () {
+        Soundex soundex = new Soundex();
+        return soundex::encode;
     }
 
     public @Bean
-    PopularityMap<String> fuzzyCorrectMap (KVStore kvStore, Soundex soundex) {
+    PopularityMap<String> fuzzyCorrectMap (KVStore kvStore, Function<String, String> hashFunction) {
         return PopularityMap.getInstance
                 (kvStore, "fz-1", 1, 2, 3,
-                        soundex::encode);
+                        hashFunction);
     }
 
     public @Bean
-    PopularityTrie<Character> wordCompleteTrie (KVStore kvStore, Soundex soundex) {
+    PopularityTrie<Character> wordCompleteTrie (KVStore kvStore) {
         return PopularityTrie.getInstance
                 (kvStore, "wc-1", 1, 2, 3);
     }
