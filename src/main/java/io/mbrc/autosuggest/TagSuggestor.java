@@ -27,7 +27,7 @@ public class TagSuggestor {
 
     // Return a list of <phrase = list of word> completions
     // given a phrase
-    private List<List<String>> suggest (List<String> phrase) {
+    public List<List<String>> suggest (List<String> phrase) {
         int n = phrase.size();
         List<LinkedList<Integer>> combinations = orderedCombinationsUpto(rangeList(0, n),
                 appConfig.getMaxWordsInPhrase());

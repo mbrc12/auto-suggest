@@ -4,7 +4,6 @@ import io.mbrc.autosuggest.popmap.PopularityMap;
 import io.mbrc.autosuggest.popmap.Suggestion;
 import io.mbrc.autosuggest.popmap.Suggestions;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.language.Soundex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

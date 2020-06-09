@@ -10,12 +10,11 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.orderedCombinationsUpto;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
@@ -27,10 +26,10 @@ public class IngestTask {
     private final PopularityMap<String> fuzzyCorrectMap;
     private final PopularityTrie<Character> wordCompleteTrie;
     private final PopularityTrie<String> tagSuggestTrie;
+    private final Predicate<String> ignorableChecker;
 
     private final AppConfig config;
     private final BlockingDeque<String> queue;
-    private final Set<String> ignoredWords;
     private final String delimiters;
     private final CountDownLatch finishLatch;
 
@@ -38,25 +37,16 @@ public class IngestTask {
     IngestTask (PopularityMap<String> fuzzyCorrectMap,
                 PopularityTrie<Character> wordCompleteTrie,
                 PopularityTrie<String> tagSuggestTrie,
-                AppConfig config) throws IOException {
+                Predicate<String> ignorableChecker,
+                AppConfig config) {
 
         this.fuzzyCorrectMap = fuzzyCorrectMap;
         this.wordCompleteTrie = wordCompleteTrie;
         this.tagSuggestTrie = tagSuggestTrie;
+        this.ignorableChecker = ignorableChecker;
 
         this.config = config;
         this.queue = new LinkedBlockingDeque<>();
-        this.ignoredWords = new HashSet<>();
-
-        String contents = Files.readString(
-                Path.of(new ClassPathResource("low_info_words.txt")
-                        .getFile()
-                        .getAbsolutePath()));
-
-        StringTokenizer tokens = new StringTokenizer(contents);
-        while (tokens.hasMoreTokens()) {
-            ignoredWords.add(tokens.nextToken().toLowerCase());
-        }
 
         this.delimiters = "!@#$%^&*()-=_+[]\\;',./{}|:\"<>?~`";
         this.finishLatch = new CountDownLatch(1);
@@ -101,9 +91,8 @@ public class IngestTask {
 
         while (tokenizer.hasMoreTokens()) {
             String word = tokenizer.nextToken().toLowerCase();
-            if (ignoredWords.contains(word))
+            if (ignorableChecker.test(word))
                 continue;
-
             words.add(word);
         }
 
@@ -112,8 +101,13 @@ public class IngestTask {
                 orderedCombinationsUpto(words, config.getMaxWordsInPhrase()));
     }
 
-    public void submit (String doc) throws InterruptedException {
-        queue.putLast(doc);
+    public void submit (String doc) {
+        try {
+            queue.putLast(doc);
+        } catch (InterruptedException e) {
+            log.info("Couldn't index document. Interrupted.");
+            e.printStackTrace();
+        }
     }
 
     @Synchronized
