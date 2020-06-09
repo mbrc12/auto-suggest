@@ -35,8 +35,11 @@ public class FuzzyCorrector {
 
     public List<String> correct (String word) {
         String encoded = hashFunction.apply(word);
+        log.info("--> ? {}", encoded);
 
-        Suggestions<String> suggestions = fuzzyCorrectMap.getSuggestions(encoded);
+        Suggestions<String> suggestions = fuzzyCorrectMap.getSuggestionsFromHash(encoded);
+
+        log.info("Sugg: {}", suggestions);
 
         if (suggestions.getSuggestions().isEmpty())
             return Collections.emptyList();
@@ -46,6 +49,9 @@ public class FuzzyCorrector {
 
         for (Suggestion<String> suggestion : suggestions.getSuggestions()) {
             String fixed = suggestion.getItem();
+            log.info(" Fixed: {}", fixed);
+            if (fixed.equals(word))     // Some word is the same, then no need to correct
+                return List.of(word);
             if (editDistance(fixed, word) <= appConfig.getMaxFuzzyDistance()) {
                 results.add(fixed);
             }

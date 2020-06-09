@@ -26,7 +26,7 @@ import static io.mbrc.autosuggest.Util.*;
 public class PopularityMap<T> {
 
     private final static int startingPopularity = 0;
-    private final static String itemPrefix = "@:";
+    private final static String itemPrefix = "@";
 
     private final KVStore kvStore;
     private final String prefix;
@@ -44,7 +44,8 @@ public class PopularityMap<T> {
                            int occurrenceIncrement,
                            int selectionIncrement,
                            int maxRank,
-                           Function<T, String> hashFunction) {
+                           Function<T, String> hashFunction,
+                           Type suggestionsType) {
         this.kvStore = kvStore;
         this.prefix = prefix;
         this.occurrenceIncrement = occurrenceIncrement;
@@ -52,7 +53,7 @@ public class PopularityMap<T> {
         this.maxRank = maxRank;
         this.hashFunction = hashFunction;
 
-        this.suggestionsType = new TypeToken<Suggestions<T>>(){}.getType();
+        this.suggestionsType = suggestionsType;
     }
 
     private void postConstruct () {
@@ -64,10 +65,12 @@ public class PopularityMap<T> {
                                                     int occurrenceIncrement,
                                                     int selectionIncrement,
                                                     int maxRank,
-                                                    Function<T, String> hashFunction) {
+                                                    Function<T, String> hashFunction,
+                                                    Type suggestionsType) {
 
         PopularityMap<T> popularityMap = new PopularityMap<>
-                (kvStore, prefix, occurrenceIncrement, selectionIncrement, maxRank, hashFunction);
+                (kvStore, prefix, occurrenceIncrement, selectionIncrement, maxRank,
+                        hashFunction, suggestionsType);
         popularityMap.postConstruct();
         return popularityMap;
     }
@@ -80,6 +83,12 @@ public class PopularityMap<T> {
         synchronized (mutex) {
             return getSuggestionsByHash(prefixed(hashFunction.apply(item)))
                     .orElse(new Suggestions<>());
+        }
+    }
+
+    public Suggestions<T> getSuggestionsFromHash (String hash) {
+        synchronized (mutex) {
+            return getSuggestionsByHash(prefixed(hash)).orElse(new Suggestions<>());
         }
     }
 

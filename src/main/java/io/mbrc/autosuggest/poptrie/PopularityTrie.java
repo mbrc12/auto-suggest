@@ -51,17 +51,18 @@ public class PopularityTrie <T> {
     private final Object mutex = new Object();
 
     private PopularityTrie (KVStore kvStore,
-                    String prefix,
-                    int occurrenceIncrement,
-                    int selectionIncrement,
-                    int maxRank) {
+                            String prefix,
+                            int occurrenceIncrement,
+                            int selectionIncrement,
+                            int maxRank,
+                            Type nodeType) {
 
         this.kvStore = kvStore;
         this.prefix = prefix;
         this.occurrenceIncrement = occurrenceIncrement;
         this.selectionIncrement = selectionIncrement;
         this.maxRank = maxRank;
-        this.nodeType = new TypeToken<Node<T>>(){}.getType();
+        this.nodeType = nodeType;
     }
 
     // Check if the currentId has already been stored. If yes, then
@@ -78,6 +79,8 @@ public class PopularityTrie <T> {
             }
         } else {
 
+            log.info("Initialize structure anew.");
+
             // Initialize the structure anew
 
             this.currentId = new AtomicInteger(0);
@@ -91,9 +94,10 @@ public class PopularityTrie <T> {
                                                     String prefix,
                                                     Integer occurrenceIncrement,
                                                     Integer selectionIncrement,
-                                                    Integer maxRank) {
+                                                    Integer maxRank,
+                                                    Type nodeType) {
         PopularityTrie<T> tree = new PopularityTrie<>
-                (kvStore, prefix, occurrenceIncrement, selectionIncrement, maxRank);
+                (kvStore, prefix, occurrenceIncrement, selectionIncrement, maxRank, nodeType);
         tree.postConstruct();
         return tree;
     }
@@ -138,6 +142,10 @@ public class PopularityTrie <T> {
                 node.putNext(edge, next);
             }
 
+//            log.info("c = {}", node.getNext('c'));
+//            log.info("dict : {}", node.getNext().toString());
+//            log.info("dictkey: {}", node.getNext().keySet().toString());
+
             IntPair finalParams = insert(iter, next, insertType);
             int finalPopularity = finalParams.getLeft();
             int finalIdx = finalParams.getRight();
@@ -156,6 +164,7 @@ public class PopularityTrie <T> {
 
     public void insert (List<T> chain, InsertType type) {
         synchronized (mutex) {
+            log.info("-- {}", chain);
             insert(chain.listIterator(), rootIdx, type);
         }
     }

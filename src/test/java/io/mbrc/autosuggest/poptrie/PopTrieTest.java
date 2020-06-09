@@ -37,7 +37,8 @@ public class PopTrieTest {
     @Test
     public void popTrie1 () {
         PopularityTrie<String> popularityTrie = PopularityTrie.getInstance
-                (kvStore, "pop-2", 1, 2, 4);
+                (kvStore, "pop-2", 1, 2, 4,
+                        stringNodeType);
         assertNotNull(popularityTrie);
         popularityTrie.insert(List.of("covid", "india", "donald"), InsertType.OCCURRENCE);
         List<Completion<String>> ans = popularityTrie.completionsOfPath(List.of("covid"));
@@ -47,7 +48,8 @@ public class PopTrieTest {
     @Test
     public void popTrie2 () {
         PopularityTrie<String> popularityTrie = PopularityTrie.getInstance
-                (kvStore, "pop-3", 1, 2, 4);
+                (kvStore, "pop-3", 1, 2, 4,
+                        stringNodeType);
         assertNotNull(popularityTrie);
         popularityTrie.insert(List.of("covid", "india", "donald"), InsertType.OCCURRENCE);
         popularityTrie.insert(List.of("covid", "india", "modi"), InsertType.OCCURRENCE);

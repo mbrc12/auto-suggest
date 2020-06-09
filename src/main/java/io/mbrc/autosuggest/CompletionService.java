@@ -60,9 +60,13 @@ public class CompletionService {
                 List.of(last) :
                 wordCompleter.complete(last);
 
+        log.info("Split: {} {}", tokens, lastWordCompletions);
+
         ArrayList<List<String>> suggestionsForEachToken = new ArrayList<>();
         for (String token : tokens) {
-            suggestionsForEachToken.add(fuzzyCorrector.correct(token));
+            List<String> fc = fuzzyCorrector.correct(token);
+            log.info("Corrected fuz: {}", fc);
+            suggestionsForEachToken.add(fc);
         }
         suggestionsForEachToken.add(lastWordCompletions);
 
@@ -83,10 +87,8 @@ public class CompletionService {
                                     ArrayList<List<String>> suggestedTokens,
                                     List<String> results) {
         if (index == suggestedTokens.size()) { // last position
-            String currentStr = String.join(delimiter, current);
-
             for (List<String> tags : tagSuggestor.suggest(current)) {
-                String total = currentStr + delimiter + String.join(delimiter, tags);
+                String total = String.join(delimiter, tags);
                 results.add(total);
                 if (results.size() >= maxCompletions)
                     return;

@@ -49,7 +49,7 @@ public class IngestTask {
         this.config = config;
         this.queue = new LinkedBlockingDeque<>();
 
-        this.delimiters = "!@#$%^&*()-=_+[]\\;',./{}|:\"<>?~`";
+        this.delimiters = "!@#$%^&*()-=_+[]\\;',./{}|:\"<>?~` ";
         this.finishLatch = new CountDownLatch(1);
 
         Thread workerThread = new Thread(this::worker);
@@ -85,6 +85,7 @@ public class IngestTask {
 
     private void indexContent (String content, InsertType insertType) {
         List<String> words = splitToWords(content);
+        log.info("{} --> {}", content, words.toString());
         List<LinkedList<String>> phrases =
                 orderedCombinationsUpto(words, config.getMaxWordsInPhrase());
 

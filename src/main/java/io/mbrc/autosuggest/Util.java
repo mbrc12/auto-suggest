@@ -1,8 +1,17 @@
 package io.mbrc.autosuggest;
 
+import com.google.gson.reflect.TypeToken;
+import io.mbrc.autosuggest.popmap.Suggestions;
+import io.mbrc.autosuggest.poptrie.Node;
+
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class Util {
+
+    public static Type stringSuggestionsType = new TypeToken<Suggestions<String>>(){}.getType();
+    public static Type charNodeType = new TypeToken<Node<Character>>(){}.getType();
+    public static Type stringNodeType = new TypeToken<Node<String>>(){}.getType();
 
     public static <T> List<LinkedList<T>> orderedCombinationsUpto(List<T> list, int K) {
         if (K == 0) return Collections.emptyList();

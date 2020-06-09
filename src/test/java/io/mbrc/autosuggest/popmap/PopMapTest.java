@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
 
+import static io.mbrc.autosuggest.Util.stringSuggestionsType;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
@@ -25,7 +26,7 @@ public class PopMapTest {
     public void popMap1 () {
         PopularityMap<String> popularityMap = PopularityMap.getInstance
                 (kvStore, "pm-1", 1, 2, 4,
-                        soundex::encode);
+                        soundex::encode, stringSuggestionsType);
         popularityMap.insert("levenstein", Util.InsertType.OCCURRENCE);
         popularityMap.insert("levenshtein", Util.InsertType.OCCURRENCE);
         popularityMap.insert("levenshtein", Util.InsertType.SELECTION);
