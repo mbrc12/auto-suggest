@@ -21,6 +21,9 @@ public class AppConfig {
 
     private Integer maxFuzzyDistance;
 
+    public Integer maxSubPhrases;
+    public Integer maxTagSuggestions;
+
     public @Bean
     Function<String, String> hashFunction () {
         Soundex soundex = new Soundex();
@@ -30,19 +33,19 @@ public class AppConfig {
     public @Bean
     PopularityMap<String> fuzzyCorrectMap (KVStore kvStore, Function<String, String> hashFunction) {
         return PopularityMap.getInstance
-                (kvStore, "fz-1", 1, 2, 3,
+                (kvStore, "fz-1", 1, 2, 2,
                         hashFunction);
     }
 
     public @Bean
     PopularityTrie<Character> wordCompleteTrie (KVStore kvStore) {
         return PopularityTrie.getInstance
-                (kvStore, "wc-1", 1, 2, 3);
+                (kvStore, "wc-1", 1, 2, 2);
     }
 
     public @Bean
     PopularityTrie<String> tagSuggestTrie (KVStore kvStore) {
         return PopularityTrie.getInstance
-                (kvStore, "ts-1", 1, 2, 3);
+                (kvStore, "ts-1", 1, 2, 2);
     }
 }

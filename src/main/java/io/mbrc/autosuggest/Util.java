@@ -1,9 +1,6 @@
 package io.mbrc.autosuggest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Util {
 
@@ -61,6 +58,42 @@ public class Util {
         } else {
             return Math.min(y, z);
         }
+    }
+
+    // Range of integers from [start, end).
+
+    public static List<Integer> rangeList (int start, int end) {
+        final List<Integer> list = new LinkedList<>();
+        for (int i = start; i < end; i++) {
+            list.add(i);
+        }
+        return list;
+    }
+
+    // Returns the elements of list whose indices are in `indices`.
+    // If indices is not strictly increasing, the result is undefined
+    public static <T> List<T> selectIndices (List<T> list, List<Integer> indices) {
+        List<T> result = new LinkedList<>();
+        ListIterator<T> iterator = list.listIterator();
+        ListIterator<Integer> indexIter = indices.listIterator();
+
+        int currentIndex = 0;
+
+        while (indexIter.hasNext()) {
+            int index = indexIter.next();
+            while (iterator.hasNext()) {
+                T elem = iterator.next();
+                if (index == currentIndex) {
+                    result.add(elem);
+                    currentIndex++;
+                    break;
+                } else {
+                    currentIndex++;
+                }
+            }
+        }
+
+        return result;
     }
 
     public enum InsertType {

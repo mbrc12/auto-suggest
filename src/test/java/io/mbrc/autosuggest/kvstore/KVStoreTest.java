@@ -11,9 +11,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import static io.mbrc.autosuggest.Util.rangeList;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
@@ -72,6 +71,6 @@ public class KVStoreTest {
         done.sort(Integer::compare);
 
         //  Check if all the processes finished successfully.
-        assertEquals(done, IntStream.range(0, N).boxed().collect(Collectors.toList()));
+        assertEquals(done, rangeList(0, N));
     }
 }
