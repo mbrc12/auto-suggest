@@ -96,6 +96,22 @@ public class Util {
         return result;
     }
 
+    // If string is of the form (prefix)z then return z
+    // otherwise return nothing.
+    public static Optional<String> splitPrefix (String prefix, String string) {
+        if (string.length() < prefix.length())
+            return Optional.empty();
+
+        if (!string.startsWith(prefix))
+            return Optional.empty();
+
+        return Optional.of(string.substring(prefix.length()));
+    }
+
+    public static String prefixed (String prefix, String string) {
+        return prefix + string;
+    }
+
     public enum InsertType {
         OCCURRENCE,
         SELECTION

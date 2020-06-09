@@ -6,9 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
-import static io.mbrc.autosuggest.Util.editDistance;
-import static io.mbrc.autosuggest.Util.selectIndices;
+import static io.mbrc.autosuggest.Util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
@@ -32,4 +32,13 @@ public class UtilTest {
                 selectIndices(List.of("This", "will", "probably", "work"), List.of(1, 3)));
     }
 
+    @Test
+    public void splitPrefix1 () {
+        assertEquals(Optional.of("content"),
+                splitPrefix("pr:", prefixed("pr:", "content")));
+        assertEquals(Optional.empty(),
+                splitPrefix("pr:", prefixed("pg:", "")));
+        assertEquals(Optional.of(""),
+                splitPrefix("p:", "p:"));
+    }
 }

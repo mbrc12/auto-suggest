@@ -34,4 +34,10 @@ public class RestServer {
     public List<String> complete (String phrase) {
         return completionService.generateCompletions(phrase);
     }
+
+    @GetMapping("/select")
+    public String select (String selected) {
+        ingestTask.selected(selected);
+        return "success";
+    }
 }
