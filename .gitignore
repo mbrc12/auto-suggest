@@ -4,6 +4,8 @@ build/
 !**/src/main/**
 !**/src/test/**
 
+*.md
+
 ### STS ###
 .apt_generated
 .classpath

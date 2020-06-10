@@ -56,8 +56,6 @@ public class IngestTask {
 
         this.splitDelimiters = splitDelimiters;
 
-        log.info("Delimiters = {}", this.splitDelimiters);
-
         Thread workerThread = new Thread(this::worker);
         workerThread.start();
     }

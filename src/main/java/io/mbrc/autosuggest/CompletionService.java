@@ -93,6 +93,11 @@ public class CompletionService {
                                     ResultCollection results) {
         if (index == suggestedTokens.size()) { // last position
             for (List<String> tags : tagSuggestor.suggest(current)) {
+
+                // Completion size should not be lower than number of words typed
+                if (tags.size() < suggestedTokens.size())
+                    continue;
+
                 String total = String.join(delimiter, tags);
                 results.add(total);
                 if (results.size() >= maxCompletions)

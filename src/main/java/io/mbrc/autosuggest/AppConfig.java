@@ -4,13 +4,17 @@ import io.mbrc.autosuggest.kvstore.KVStore;
 import io.mbrc.autosuggest.popmap.PopularityMap;
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.language.Soundex;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -22,6 +26,7 @@ import java.util.regex.Pattern;
 
 import static io.mbrc.autosuggest.Util.*;
 
+@Slf4j
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "app")
@@ -90,15 +95,29 @@ public class AppConfig {
 
         final Set<String> ignoredWords = new HashSet<>();
 
-        String contents = Files.readString(
-                Path.of(new ClassPathResource("low_info_words.txt")
-                        .getFile()
-                        .getAbsolutePath()));
+        BufferedReader reader =
+                new BufferedReader(
+                        new InputStreamReader(
+                                new ClassPathResource("low_info_words.txt").getInputStream()));
 
-        StringTokenizer tokens = new StringTokenizer(contents);
-        while (tokens.hasMoreTokens()) {
-            ignoredWords.add(tokens.nextToken().toLowerCase());
+        while (true) {
+            try {
+                String token = reader.readLine().strip().toLowerCase();
+                ignoredWords.add(token);
+                log.debug("Ignored word: {}", token);
+            } catch (Exception e) {
+                break;
+            }
         }
+//        String contents = Files.readString(
+//                Path.of(new ClassPathResource("low_info_words.txt")
+//                        .getFile()
+//                        .getAbsolutePath()));
+//
+//        StringTokenizer tokens = new StringTokenizer(contents);
+//        while (tokens.hasMoreTokens()) {
+//            ignoredWords.add(tokens.nextToken().toLowerCase());
+//        }
 
         final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
