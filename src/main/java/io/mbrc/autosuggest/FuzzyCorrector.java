@@ -5,7 +5,7 @@ import io.mbrc.autosuggest.popmap.Suggestion;
 import io.mbrc.autosuggest.popmap.Suggestions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -15,7 +15,7 @@ import java.util.function.Function;
 import static io.mbrc.autosuggest.Util.editDistance;
 
 @Slf4j
-@Component
+@Service
 public class FuzzyCorrector {
 
     private final PopularityMap<String> fuzzyCorrectMap;
@@ -35,21 +35,21 @@ public class FuzzyCorrector {
 
     public List<String> correct (String word) {
         String encoded = hashFunction.apply(word);
-        log.info("--> ? {}", encoded);
+        log.debug("--> ? {}", encoded);
 
         Suggestions<String> suggestions = fuzzyCorrectMap.getSuggestionsFromHash(encoded);
 
-        log.info("Sugg: {}", suggestions);
+        log.debug("Sugg: {}", suggestions);
 
         if (suggestions.getSuggestions().isEmpty())
             return Collections.emptyList();
 
         List<String> results = new LinkedList<>();
-        results.add(word);
+//        results.add(word);
 
         for (Suggestion<String> suggestion : suggestions.getSuggestions()) {
             String fixed = suggestion.getItem();
-            log.info(" Fixed: {}", fixed);
+            log.debug(" Fixed: {}", fixed);
             if (fixed.equals(word))     // Some word is the same, then no need to correct
                 return List.of(word);
             if (editDistance(fixed, word) <= appConfig.getMaxFuzzyDistance()) {

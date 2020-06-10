@@ -2,7 +2,7 @@ package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +11,7 @@ import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asString;
 
 @Slf4j
-@Component
+@Service
 public class WordCompleter {
 
     private final PopularityTrie<Character> wordCompleteTrie;
@@ -26,7 +26,6 @@ public class WordCompleter {
 
     public List<String> complete (String word) {
         final List<String> results = new LinkedList<>();
-        results.add(word);
 
         wordCompleteTrie.completionsOfPath(asCharacterList(word))
                 .forEach(completion -> results.add(asString(completion.getPath())));

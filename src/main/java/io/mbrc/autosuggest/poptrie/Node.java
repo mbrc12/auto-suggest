@@ -1,5 +1,6 @@
 package io.mbrc.autosuggest.poptrie;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 import java.util.LinkedList;
@@ -8,10 +9,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 public class Node<T> {
+    @SerializedName("x")
     ConcurrentHashMap<T, Integer> next;
+
+    @SerializedName("c")
     LinkedList<IntPair> completions;
+
+    @SerializedName("p")
     final int parent;
+
+    @SerializedName("s")
     int popularity;
+
+    @SerializedName("e")
     T edgeFrom;
 
     Node (int parent, T edgeFrom, int startingPopularity) {

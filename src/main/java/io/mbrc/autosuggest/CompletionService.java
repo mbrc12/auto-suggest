@@ -1,5 +1,7 @@
 package io.mbrc.autosuggest;
 
+import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +39,10 @@ public class CompletionService {
         this.maxCompletions = appConfig.getMaxCompletions();
     }
 
-    public List<String> generateCompletions (String input) {
+    public List<String> generateCompletions (String input_) {
+
+        String input = input_.toLowerCase();
+
         StringTokenizer tokenizer = new StringTokenizer(input);
         LinkedList<String> tokens = new LinkedList<>();
 
@@ -70,11 +75,11 @@ public class CompletionService {
         }
         suggestionsForEachToken.add(lastWordCompletions);
 
-        List<String> completions = new LinkedList<>();
+        ResultCollection completions = new ResultCollection();
 
         recurseAndAddTags(0, new LinkedList<>(), suggestionsForEachToken, completions);
 
-        return completions;
+        return completions.getResults();
     }
 
 
@@ -85,7 +90,7 @@ public class CompletionService {
     private void recurseAndAddTags (int index,
                                     LinkedList<String> current,
                                     ArrayList<List<String>> suggestedTokens,
-                                    List<String> results) {
+                                    ResultCollection results) {
         if (index == suggestedTokens.size()) { // last position
             for (List<String> tags : tagSuggestor.suggest(current)) {
                 String total = String.join(delimiter, tags);
@@ -101,6 +106,28 @@ public class CompletionService {
                 if (results.size() >= maxCompletions)
                     return;
             }
+        }
+    }
+
+    @Getter
+    private static class ResultCollection {
+        final List<String> results;
+        final Set<String> resultsSet;
+
+        ResultCollection () {
+            results = new LinkedList<>();
+            resultsSet = new HashSet<>();
+        }
+
+        void add (String result) {
+            if (resultsSet.contains(result))
+                return;
+            results.add(result);
+            resultsSet.add(result);
+        }
+
+        int size () {
+            return results.size();
         }
     }
 

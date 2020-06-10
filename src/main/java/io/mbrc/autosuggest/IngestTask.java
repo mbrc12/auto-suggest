@@ -5,19 +5,20 @@ import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.*;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
 
 @Slf4j
-@Component
+@Service
 public class IngestTask {
 
     private final static String insertPrefix = "i:";
@@ -31,14 +32,16 @@ public class IngestTask {
 
     private final AppConfig config;
     private final BlockingDeque<String> queue;
-    private final String delimiters;
     private final CountDownLatch finishLatch;
+
+    private final String splitDelimiters;
 
     @Autowired
     IngestTask (PopularityMap<String> fuzzyCorrectMap,
                 PopularityTrie<Character> wordCompleteTrie,
                 PopularityTrie<String> tagSuggestTrie,
                 Predicate<String> ignorableChecker,
+                String splitDelimiters,
                 AppConfig config) {
 
         this.fuzzyCorrectMap = fuzzyCorrectMap;
@@ -49,8 +52,11 @@ public class IngestTask {
         this.config = config;
         this.queue = new LinkedBlockingDeque<>();
 
-        this.delimiters = "!@#$%^&*()-=_+[]\\;',./{}|:\"<>?~` ";
         this.finishLatch = new CountDownLatch(1);
+
+        this.splitDelimiters = splitDelimiters;
+
+        log.info("Delimiters = {}", this.splitDelimiters);
 
         Thread workerThread = new Thread(this::worker);
         workerThread.start();
@@ -86,8 +92,7 @@ public class IngestTask {
     private void indexContent (String content, InsertType insertType) {
         List<String> words = splitToWords(content);
         log.info("{} --> {}", content, words.toString());
-        List<LinkedList<String>> phrases =
-                orderedCombinationsUpto(words, config.getMaxWordsInPhrase());
+        List<LinkedList<String>> phrases = computePrefixes (words);
 
         words.forEach(word -> fuzzyCorrectMap.insert(word, insertType));
 
@@ -97,9 +102,35 @@ public class IngestTask {
         phrases.forEach(phrase -> tagSuggestTrie.insert(phrase, insertType));
     }
 
+    public List<LinkedList<String>> computePrefixes (List<String> words) {
+        int N = words.size();
+        int phraseLength = 1;
+
+        for (int count = 1; count <= config.getMaxWordsInPhrase(); count++) {
+            if (choose(N, count) <= config.getMaxPhrases()) {
+                phraseLength = count;
+            }
+        }
+
+        List<LinkedList<String>> prefixes = orderedCombinationsUpto(words, phraseLength);
+
+        // Now try to fill the remaining quota with random phrases of length 1 higher
+        // TODO: Later ensure that no-duplicates occur.
+
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        ArrayList<LinkedList<String>> morePrefixes =
+                new ArrayList<>(orderedCombinationsUpto(words, phraseLength + 1));
+
+        while (prefixes.size() < config.getMaxWordsInPhrase()) {
+            int index = rng.nextInt(morePrefixes.size());
+            prefixes.add(morePrefixes.get(index));
+        }
+
+        return prefixes;
+    }
 
     private List<String> splitToWords (String data) {
-        StringTokenizer tokenizer = new StringTokenizer(data, delimiters);
+        StringTokenizer tokenizer = new StringTokenizer(data, splitDelimiters);
         List<String> words = new ArrayList<>();
 
         while (tokenizer.hasMoreTokens()) {

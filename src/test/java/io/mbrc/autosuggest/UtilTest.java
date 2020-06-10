@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.mbrc.autosuggest.Util.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
@@ -40,5 +41,13 @@ public class UtilTest {
                 splitPrefix("pr:", prefixed("pg:", "")));
         assertEquals(Optional.of(""),
                 splitPrefix("p:", "p:"));
+    }
+
+    @Test
+    public void chooseTest () {
+        assertEquals(choose(5, 2), 10);
+        assertEquals(choose(0, 0), 1);
+        assertEquals(choose(5, 6), 0);
+        assertEquals(choose(6, 3), 20);
     }
 }

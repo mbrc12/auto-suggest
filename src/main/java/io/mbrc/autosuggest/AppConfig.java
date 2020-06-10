@@ -1,10 +1,7 @@
 package io.mbrc.autosuggest;
 
-import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.kvstore.KVStore;
 import io.mbrc.autosuggest.popmap.PopularityMap;
-import io.mbrc.autosuggest.popmap.Suggestions;
-import io.mbrc.autosuggest.poptrie.Node;
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.Data;
 import org.apache.commons.codec.language.Soundex;
@@ -14,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -33,6 +29,7 @@ public class AppConfig {
 
     private Integer maxWordsInPhrase;
     private String ingestFinishSymbol;
+    private Integer maxPhrases;
 
     private Integer maxFuzzyDistance;
 
@@ -42,10 +39,29 @@ public class AppConfig {
     public Integer maxTokensForSuggestion;
     public Integer maxCompletions;
 
+    public @Bean String splitDelimiters () {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (char c = 0; c < 255; c++) {
+            if (isAlphabet(c) || Character.isDigit(c))
+                continue;
+            stringBuilder.append(c);
+        }
+        return stringBuilder.toString();
+    }
+
     public @Bean
     Function<String, String> hashFunction () {
         Soundex soundex = new Soundex();
-        return soundex::encode;
+        return string -> {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < string.length(); i++) {
+                char current = string.charAt(i);
+                if (isAlphabet(current))
+                    builder.append(current);
+            }
+
+            return soundex.encode(builder.toString());
+        };
     }
 
     public @Bean

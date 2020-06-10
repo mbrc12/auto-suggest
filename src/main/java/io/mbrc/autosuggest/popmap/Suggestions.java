@@ -1,5 +1,6 @@
 package io.mbrc.autosuggest.popmap;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 import java.util.LinkedList;
@@ -10,6 +11,7 @@ import java.util.ListIterator;
 public class Suggestions<T> {
 
     // List of suggestions sorted in descending order by popularity
+    @SerializedName("s")
     private final LinkedList<Suggestion<T>> suggestions;
 
     Suggestions () {

@@ -142,10 +142,6 @@ public class PopularityTrie <T> {
                 node.putNext(edge, next);
             }
 
-//            log.info("c = {}", node.getNext('c'));
-//            log.info("dict : {}", node.getNext().toString());
-//            log.info("dictkey: {}", node.getNext().keySet().toString());
-
             IntPair finalParams = insert(iter, next, insertType);
             int finalPopularity = finalParams.getLeft();
             int finalIdx = finalParams.getRight();
@@ -157,6 +153,8 @@ public class PopularityTrie <T> {
             return finalParams;
         } else {
             node.setPopularity(node.getPopularity() + incrementOf(insertType));
+            node.addCompletion(node.getPopularity(), nodeIdx, maxRank);
+
             putNode(node, nodeIdx);
             return IntPair.of(node.getPopularity(), nodeIdx);
         }
@@ -164,7 +162,7 @@ public class PopularityTrie <T> {
 
     public void insert (List<T> chain, InsertType type) {
         synchronized (mutex) {
-            log.info("-- {}", chain);
+            log.debug("-- {}", chain);
             insert(chain.listIterator(), rootIdx, type);
         }
     }

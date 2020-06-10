@@ -121,6 +121,25 @@ public class Util {
         return prefix + string;
     }
 
+    public static boolean isAlphabet (char c) {
+        if ('A' <= c && c <= 'Z') return true;
+        if ('a' <= c && c <= 'z') return true;
+        return false;
+    }
+
+
+    public static long choose (int n, int r) {
+        if (r < 0) return 0;
+        if (r > n) return 0;
+        long sol = 1;
+        long div = 1;
+        for (int i = 0; i < r; i++) {
+            sol *= n - i;
+            div *= i + 1;
+        }
+        return sol / div;
+    }
+
     public enum InsertType {
         OCCURRENCE,
         SELECTION
