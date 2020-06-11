@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Predicate;
 
 
@@ -14,6 +15,8 @@ import java.util.function.Predicate;
 public class CompletionService {
 
     private static String delimiter = " ";
+
+    private final ReadWriteLock readWriteLock;
 
     private final FuzzyCorrector fuzzyCorrector;
     private final WordCompleter wordCompleter;
@@ -24,11 +27,14 @@ public class CompletionService {
 
     private final int maxCompletions;
 
-    CompletionService (FuzzyCorrector fuzzyCorrector,
+    CompletionService (ReadWriteLock readWriteLock,
+                       FuzzyCorrector fuzzyCorrector,
                        WordCompleter wordCompleter,
                        TagSuggestor tagSuggestor,
                        Predicate<String> ignorableChecker,
                        AppConfig appConfig) {
+
+        this.readWriteLock = readWriteLock;
 
         this.fuzzyCorrector = fuzzyCorrector;
         this.wordCompleter = wordCompleter;
@@ -39,7 +45,14 @@ public class CompletionService {
         this.maxCompletions = appConfig.getMaxCompletions();
     }
 
-    public List<String> generateCompletions (String input_) {
+    public List<String> complete (String input) {
+        readWriteLock.readLock().lock();
+        List<String> results = generateCompletions(input);
+        readWriteLock.readLock().unlock();
+        return results;
+    }
+
+    private List<String> generateCompletions (String input_) {
 
         String input = input_.toLowerCase();
 

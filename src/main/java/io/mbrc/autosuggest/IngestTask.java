@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.*;
@@ -25,6 +26,8 @@ public class IngestTask {
     private final static String updatePrefix = "u:";
     private final static String finishPrefix = "f:";
 
+    private final ReadWriteLock readWriteLock;
+
     private final PopularityMap<String> fuzzyCorrectMap;
     private final PopularityTrie<Character> wordCompleteTrie;
     private final PopularityTrie<String> tagSuggestTrie;
@@ -37,12 +40,15 @@ public class IngestTask {
     private final String splitDelimiters;
 
     @Autowired
-    IngestTask (PopularityMap<String> fuzzyCorrectMap,
+    IngestTask (ReadWriteLock readWriteLock,
+                PopularityMap<String> fuzzyCorrectMap,
                 PopularityTrie<Character> wordCompleteTrie,
                 PopularityTrie<String> tagSuggestTrie,
                 Predicate<String> ignorableChecker,
                 String splitDelimiters,
                 AppConfig config) {
+
+        this.readWriteLock = readWriteLock;
 
         this.fuzzyCorrectMap = fuzzyCorrectMap;
         this.wordCompleteTrie = wordCompleteTrie;
@@ -71,6 +77,8 @@ public class IngestTask {
                     return;
                 }
 
+                readWriteLock.writeLock().lock();
+
                 splitPrefix(insertPrefix, item).ifPresentOrElse(
                         // if present
                         data -> indexContent(data, InsertType.OCCURRENCE),
@@ -78,6 +86,8 @@ public class IngestTask {
                         // otherwise
                         () -> splitPrefix(updatePrefix, item).ifPresent(
                                 selection -> indexContent(selection, InsertType.SELECTION)));
+
+                readWriteLock.writeLock().unlock();
 
             } catch (InterruptedException e) {
                 log.error("Worker thread interrupted.");

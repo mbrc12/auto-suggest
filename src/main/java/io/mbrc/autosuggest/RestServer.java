@@ -26,7 +26,7 @@ public class RestServer {
 
     @PostMapping("/complete")
     public List<String> complete (@RequestParam String phrase) {
-        return completionService.generateCompletions(phrase);
+        return completionService.complete(phrase);
     }
 
     @PostMapping("/select")

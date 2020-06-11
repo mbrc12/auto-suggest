@@ -20,6 +20,8 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -43,6 +45,11 @@ public class AppConfig {
 
     public Integer maxTokensForSuggestion;
     public Integer maxCompletions;
+
+    public @Bean
+    ReadWriteLock readWriteLock () {
+        return new ReentrantReadWriteLock(true);
+    }
 
     public @Bean String splitDelimiters () {
         StringBuilder stringBuilder = new StringBuilder();
