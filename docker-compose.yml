@@ -1,0 +1,10 @@
+version: '3'
+services:
+    web:
+        build: .
+        ports:
+            - "8090:8090"
+    redis:
+        image: "redis:alpine"
+    mongo:
+        image: mongo
