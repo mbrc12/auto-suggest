@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 
@@ -55,6 +56,8 @@ public class CompletionService {
     private List<String> generateCompletions (String input_) {
 
         String input = input_.toLowerCase();
+
+        log.info("Complete: {}", input);
 
         StringTokenizer tokenizer = new StringTokenizer(input);
         LinkedList<String> tokens = new LinkedList<>();

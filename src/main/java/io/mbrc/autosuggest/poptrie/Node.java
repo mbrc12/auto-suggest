@@ -5,12 +5,10 @@ import lombok.Data;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
-import java.util.concurrent.ConcurrentHashMap;
 
+// TODO: Reanalyse later if an LinkedList is the correct implementation
 @Data
 public class Node<T> {
-    @SerializedName("x")
-    ConcurrentHashMap<T, Integer> next;
 
     @SerializedName("c")
     LinkedList<IntPair> completions;
@@ -29,16 +27,9 @@ public class Node<T> {
         this.edgeFrom = edgeFrom;
         this.parent = parent;
         this.popularity = startingPopularity;
-        this.next = new ConcurrentHashMap<>();
     }
 
-    public void putNext (T edge, int node) {
-        next.put(edge, node);
-    }
 
-    public Integer getNext (T edge) {
-        return next.get(edge);
-    }
 
     synchronized void addCompletion (int val, int node, int maxRank) {
         IntPair paired = IntPair.of(val, node);

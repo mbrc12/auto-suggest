@@ -1,6 +1,5 @@
 package io.mbrc.autosuggest.poptrie;
 
-import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.kvstore.KVStore;
 import lombok.Synchronized;
 import lombok.Value;
@@ -18,7 +17,8 @@ import static io.mbrc.autosuggest.Util.*;
 // HashMap keys and Gson serialization. The expected
 // candidates are T = Character / String. Also pass in a
 // unique prefix, ensuring that no-other keys in your application
-// ends up having this prefix.
+// ends up having this prefix. **Ensure that T has a unique .toString()
+// method**
 
 // Implementation note: All write functions that are callable directly
 // by the outside world, are synchronized on a shared mutex. This is
@@ -37,6 +37,7 @@ public class PopularityTrie <T> {
 
     private final static Integer startingPopularity = 0;
     private final static String currentIdKey = "currentId";
+    private final static String associatedHashMapPrefix = "$";
 
     private final int occurrenceIncrement;
     private final int selectionIncrement;
@@ -135,11 +136,11 @@ public class PopularityTrie <T> {
 
         if (iter.hasNext()) {
             T edge = iter.next();
-            Integer next = node.getNext(edge);
+            Integer next = getNext(nodeIdx, edge);
 
             if (next == null) {
                 next = registerNewNode(nodeIdx, edge);
-                node.putNext(edge, next);
+                putNext(nodeIdx, edge, next);
             }
 
             IntPair finalParams = insert(iter, next, insertType);
@@ -177,7 +178,7 @@ public class PopularityTrie <T> {
 
         if (iter.hasNext()) {
             T edge = iter.next();
-            Integer next = node.getNext(edge);
+            Integer next = getNext(nodeIdx, edge);
 
             if (next == null) {
                 return null;
@@ -236,7 +237,19 @@ public class PopularityTrie <T> {
         return prefixed(val.toString());
     }
 
-    // TODO: Reanalyse later if an LinkedList is the correct implementation
+    private String hashPrefixed (Integer val) {
+        return prefixed(associatedHashMapPrefix + val.toString());
+    }
+
+    // TODO: Use Optional<Integer> here as well, to indicate absence of key instead of null
+    private Integer getNext (Integer nodeIdx, T edge) {
+        return kvStore.queryAssoc(hashPrefixed(nodeIdx), edge.toString(), Integer.class);
+    }
+
+    private void putNext (Integer nodeIdx, T edge, int next) {
+        kvStore.insertAssoc(hashPrefixed(nodeIdx), edge.toString(), next);
+    }
+
 
     @Value
     public static class Completion<T> {

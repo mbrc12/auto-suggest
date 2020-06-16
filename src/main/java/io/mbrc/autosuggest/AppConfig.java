@@ -133,4 +133,5 @@ public class AppConfig {
             return pattern.matcher(word).matches();
         };
     }
+
 }

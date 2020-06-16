@@ -13,6 +13,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.*;
@@ -21,7 +22,7 @@ import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
 @Slf4j
 @Service
 public class IngestTask {
-
+    
     private final static String insertPrefix = "i:";
     private final static String updatePrefix = "u:";
     private final static String finishPrefix = "f:";
@@ -67,9 +68,12 @@ public class IngestTask {
     }
 
     private void worker () {
+        int count = 0;
         while (true) {
             try {
                 String item = queue.takeFirst();
+
+                log.info("Item #{}", ++count);
 
                 Optional<String> content = splitPrefix(finishPrefix, item);
                 if (content.isPresent()) {
@@ -99,6 +103,8 @@ public class IngestTask {
 
     private void indexContent (String content, InsertType insertType) {
         List<String> words = splitToWords(content);
+        if (words.isEmpty()) return;
+
         log.info("{} --> {}", content, words.toString());
         List<LinkedList<String>> phrases = computePrefixes (words);
 

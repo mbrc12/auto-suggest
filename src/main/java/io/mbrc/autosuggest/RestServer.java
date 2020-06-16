@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static io.mbrc.autosuggest.Util.stringCleaner;
+
 @RestController
 public class RestServer {
 
@@ -18,20 +20,23 @@ public class RestServer {
         this.completionService = completionService;
     }
 
+    // Clean all input before sending using stringCleaner
+
     @PostMapping("/index")
     public String index (@RequestBody List<String> titles) {
-        titles.forEach(ingestTask::submit);
+        titles.forEach(title ->
+                ingestTask.submit(stringCleaner(title)));
         return "success";
     }
 
     @PostMapping("/complete")
     public List<String> complete (@RequestParam String phrase) {
-        return completionService.complete(phrase);
+        return completionService.complete(stringCleaner(phrase));
     }
 
     @PostMapping("/select")
     public String select (@RequestParam String selected) {
-        ingestTask.selected(selected);
+        ingestTask.selected(stringCleaner(selected));
         return "success";
     }
 }

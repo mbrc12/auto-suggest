@@ -3,9 +3,11 @@ package io.mbrc.autosuggest;
 import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.popmap.Suggestions;
 import io.mbrc.autosuggest.poptrie.Node;
+import org.springframework.context.annotation.Bean;
 
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Function;
 
 public class Util {
 
@@ -127,6 +129,9 @@ public class Util {
         return false;
     }
 
+    public static String stringCleaner (String str) {
+        return str.replaceAll("\\P{Print}", "");
+    }
 
     public static long choose (int n, int r) {
         if (r < 0) return 0;

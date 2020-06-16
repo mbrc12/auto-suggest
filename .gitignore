@@ -6,6 +6,8 @@ build/
 
 *.md
 
+venv/
+
 Dockerfile
 docker-compose.yml
 
