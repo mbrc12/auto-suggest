@@ -11,9 +11,7 @@ import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.*;
@@ -127,7 +125,7 @@ public class IngestTask {
         for (int count = 1; count <= config.getMaxWordsInPhrase(); count++) {
             int currentSize = computeSize(N, count);
             if (currentSize <= phrasesLeft) {
-                phrases.addAll(orderedGramsUpto(words, count));
+                phrases.addAll(orderedGrams(words, count));
                 phrasesLeft -= currentSize;
             } else {
                 break;

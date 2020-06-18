@@ -45,7 +45,7 @@ public class UtilTest {
 
     @Test
     public void combinationsTest () {
-        assertEquals(orderedGramsUpto(List.of("a", "b", "c", "d"), 2).size(), computeSize(4, 2));
+        assertEquals(orderedGrams(List.of("a", "b", "c", "d"), 2).size(), computeSize(4, 2));
         assertEquals(computeSize(4, 2), 3);
     }
 }

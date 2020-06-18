@@ -13,7 +13,7 @@ public class Util {
     public static Type charNodeType = new TypeToken<Node<Character>>(){}.getType();
     public static Type stringNodeType = new TypeToken<Node<String>>(){}.getType();
 
-    public static <T> List<LinkedList<T>> orderedGramsUpto (List<T> list, int K) {
+    public static <T> List<LinkedList<T>> orderedGrams (List<T> list, int K) {
         if (K == 0) return Collections.emptyList();
 
         ArrayList<T> arrayList = new ArrayList<>(list);
@@ -30,7 +30,7 @@ public class Util {
         return grams;
     }
 
-    // orderedGramsUpto(l, K).size() == computeSize(l.size(), K)
+    // orderedGrams(l, K).size() == computeSize(l.size(), K)
 
     public static int computeSize (int n, int K) {
         if (K == 0) return 0;

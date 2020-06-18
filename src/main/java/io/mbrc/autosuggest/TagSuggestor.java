@@ -30,7 +30,7 @@ public class TagSuggestor {
 
     public List<List<String>> suggest (List<String> phrase) {
         int n = phrase.size();
-        List<LinkedList<Integer>> phrases = orderedGramsUpto(rangeList(0, n),
+        List<LinkedList<Integer>> phrases = orderedGrams(rangeList(0, n),
                 appConfig.getMaxWordsInPhrase());
 
         // Order by decreasing sum, see Notes.md for rationale.
