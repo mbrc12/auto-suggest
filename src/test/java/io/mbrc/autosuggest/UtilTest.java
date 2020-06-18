@@ -49,5 +49,7 @@ public class UtilTest {
         assertEquals(choose(0, 0), 1);
         assertEquals(choose(5, 6), 0);
         assertEquals(choose(6, 3), 20);
+        assertEquals(choose(4, 2), 6);
+        assertEquals(orderedCombinations(List.of("a", "b", "c", "d"), 2).size(), choose(4, 2));
     }
 }

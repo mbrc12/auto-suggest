@@ -1,16 +1,11 @@
 package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.kvstore.KVStore;
-import io.mbrc.autosuggest.poptrie.PopularityTrie;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-
-import static io.mbrc.autosuggest.Util.orderedCombinationsUpto;
 
 @Slf4j
 @Component
@@ -33,7 +28,7 @@ public class CLI implements CommandLineRunner{
 //
 
 //        List<Integer> list = List.of(1, 2, 3);
-//        for (List<Integer> comb : orderedCombinationsUpto(list, 2)) {
+//        for (List<Integer> comb : orderedCombinations(list, 2)) {
 //            log.info("--> {}", comb.toString());
 //        }
 //

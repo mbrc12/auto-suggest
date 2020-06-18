@@ -67,7 +67,7 @@ public class CompletionService {
         }
 
 
-        if (tokens.size() >= appConfig.getMaxTokensForSuggestion()) {
+        if (tokens.size() > appConfig.getMaxTokensForSuggestion()) {
             return List.of(input); // Too many tokens, don't try to suggest
         }
 

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Util {
 
@@ -15,7 +16,7 @@ public class Util {
     public static Type charNodeType = new TypeToken<Node<Character>>(){}.getType();
     public static Type stringNodeType = new TypeToken<Node<String>>(){}.getType();
 
-    public static <T> List<LinkedList<T>> orderedCombinationsUpto(List<T> list, int K) {
+    public static <T> List<LinkedList<T>> orderedCombinations(List<T> list, int K) {
         if (K == 0) return Collections.emptyList();
 
         ArrayList<T> arrayList = new ArrayList<>(list);
@@ -34,7 +35,7 @@ public class Util {
             }
         }
 
-        return combinations;
+        return combinations.stream().filter(comb -> comb.size() == K).collect(Collectors.toList());
     }
 
     // Shamelessly copied from https://www.baeldung.com/java-levenshtein-distance

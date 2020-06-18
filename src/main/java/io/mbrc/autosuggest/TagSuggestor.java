@@ -30,7 +30,7 @@ public class TagSuggestor {
 
     public List<List<String>> suggest (List<String> phrase) {
         int n = phrase.size();
-        List<LinkedList<Integer>> combinations = orderedCombinationsUpto(rangeList(0, n),
+        List<LinkedList<Integer>> combinations = orderedCombinations(rangeList(0, n),
                 appConfig.getMaxWordsInPhrase());
 
         // Order by decreasing sum, see Notes.md for rationale.

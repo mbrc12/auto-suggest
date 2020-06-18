@@ -13,7 +13,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.*;
@@ -106,7 +105,7 @@ public class IngestTask {
         if (words.isEmpty()) return;
 
         log.info("{} --> {}", content, words.toString());
-        List<LinkedList<String>> phrases = computePrefixes (words);
+        List<LinkedList<String>> phrases = computePhrases(words);
 
         words.forEach(word -> fuzzyCorrectMap.insert(word, insertType));
 
@@ -116,31 +115,41 @@ public class IngestTask {
         phrases.forEach(phrase -> tagSuggestTrie.insert(phrase, insertType));
     }
 
-    public List<LinkedList<String>> computePrefixes (List<String> words) {
+    public List<LinkedList<String>> computePhrases (List<String> words) {
         int N = words.size();
+        int phrasesLeft = config.getMaxPhrases();
         int phraseLength = 1;
 
+        LinkedList<LinkedList<String>> phrases = new LinkedList<>();
+
         for (int count = 1; count <= config.getMaxWordsInPhrase(); count++) {
-            if (choose(N, count) <= config.getMaxPhrases()) {
-                phraseLength = count;
+            long currentSize = choose(N, count);
+            if (currentSize <= phrasesLeft) {
+                phrases.addAll(orderedCombinations(words, count));
+                phrasesLeft -= currentSize;
+                phraseLength = count + 1;
+            } else {
+                break;
             }
         }
 
-        List<LinkedList<String>> prefixes = orderedCombinationsUpto(words, phraseLength);
+        if (phraseLength > words.size())
+            return phrases;
 
         // Now try to fill the remaining quota with random phrases of length 1 higher
         // TODO: Later ensure that no-duplicates occur.
 
         ThreadLocalRandom rng = ThreadLocalRandom.current();
         ArrayList<LinkedList<String>> morePrefixes =
-                new ArrayList<>(orderedCombinationsUpto(words, phraseLength + 1));
+                new ArrayList<>(orderedCombinations(words, phraseLength));
 
-        while (prefixes.size() < config.getMaxWordsInPhrase()) {
+        while (phrasesLeft > 0) {
             int index = rng.nextInt(morePrefixes.size());
-            prefixes.add(morePrefixes.get(index));
+            phrases.add(morePrefixes.get(index));
+            phrasesLeft--;
         }
 
-        return prefixes;
+        return phrases;
     }
 
     private List<String> splitToWords (String data) {
