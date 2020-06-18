@@ -3,11 +3,9 @@ package io.mbrc.autosuggest;
 import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.popmap.Suggestions;
 import io.mbrc.autosuggest.poptrie.Node;
-import org.springframework.context.annotation.Bean;
 
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.Function;
 
 public class Util {
 
@@ -15,26 +13,29 @@ public class Util {
     public static Type charNodeType = new TypeToken<Node<Character>>(){}.getType();
     public static Type stringNodeType = new TypeToken<Node<String>>(){}.getType();
 
-    public static <T> List<LinkedList<T>> orderedCombinationsUpto(List<T> list, int K) {
+    public static <T> List<LinkedList<T>> orderedGramsUpto (List<T> list, int K) {
         if (K == 0) return Collections.emptyList();
 
         ArrayList<T> arrayList = new ArrayList<>(list);
-        ArrayList<LinkedList<T>> combinations = new ArrayList<>();
+        LinkedList<LinkedList<T>> grams = new LinkedList<>();
 
-        for (T item : arrayList) {
-            int currentSize = combinations.size();
-            combinations.add(new LinkedList<>(List.of(item)));
-            for (int i = 0; i < currentSize; i++) {
-                List<T> comb = combinations.get(i);
-                if (comb.size() < K) {
-                    LinkedList<T> copy = new LinkedList<>(comb);
-                    copy.add(item);
-                    combinations.add(copy);
-                }
+        for (int i = 0; i + K - 1 < arrayList.size(); i++) {
+            LinkedList<T> gram = new LinkedList<>();
+            for (int j = 0; j < K; j++) {
+                gram.add(arrayList.get(i + j));
             }
+            grams.add(gram);
         }
 
-        return combinations;
+        return grams;
+    }
+
+    // orderedGramsUpto(l, K).size() == computeSize(l.size(), K)
+
+    public static int computeSize (int n, int K) {
+        if (K == 0) return 0;
+        if (K > n) return 0;
+        return n - K + 1;
     }
 
     // Shamelessly copied from https://www.baeldung.com/java-levenshtein-distance
@@ -131,18 +132,6 @@ public class Util {
 
     public static String stringCleaner (String str) {
         return str.replaceAll("\\P{Print}", "");
-    }
-
-    public static long choose (int n, int r) {
-        if (r < 0) return 0;
-        if (r > n) return 0;
-        long sol = 1;
-        long div = 1;
-        for (int i = 0; i < r; i++) {
-            sol *= n - i;
-            div *= i + 1;
-        }
-        return sol / div;
     }
 
     public enum InsertType {

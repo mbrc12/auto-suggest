@@ -106,7 +106,7 @@ public class IngestTask {
         if (words.isEmpty()) return;
 
         log.info("{} --> {}", content, words.toString());
-        List<LinkedList<String>> phrases = computePrefixes (words);
+        List<LinkedList<String>> phrases = computePhrases (words);
 
         words.forEach(word -> fuzzyCorrectMap.insert(word, insertType));
 
@@ -116,31 +116,24 @@ public class IngestTask {
         phrases.forEach(phrase -> tagSuggestTrie.insert(phrase, insertType));
     }
 
-    public List<LinkedList<String>> computePrefixes (List<String> words) {
+    public List<LinkedList<String>> computePhrases (List<String> words) {
+
+        LinkedList<LinkedList<String>> phrases = new LinkedList<>();
+
         int N = words.size();
-        int phraseLength = 1;
+
+        int phrasesLeft = config.getMaxPhrases();
 
         for (int count = 1; count <= config.getMaxWordsInPhrase(); count++) {
-            if (choose(N, count) <= config.getMaxPhrases()) {
-                phraseLength = count;
+            int currentSize = computeSize(N, count);
+            if (currentSize <= phrasesLeft) {
+                phrases.addAll(orderedGramsUpto(words, count));
+                phrasesLeft -= currentSize;
+            } else {
+                break;
             }
         }
-
-        List<LinkedList<String>> prefixes = orderedCombinationsUpto(words, phraseLength);
-
-        // Now try to fill the remaining quota with random phrases of length 1 higher
-        // TODO: Later ensure that no-duplicates occur.
-
-        ThreadLocalRandom rng = ThreadLocalRandom.current();
-        ArrayList<LinkedList<String>> morePrefixes =
-                new ArrayList<>(orderedCombinationsUpto(words, phraseLength + 1));
-
-        while (prefixes.size() < config.getMaxWordsInPhrase()) {
-            int index = rng.nextInt(morePrefixes.size());
-            prefixes.add(morePrefixes.get(index));
-        }
-
-        return prefixes;
+        return phrases;
     }
 
     private List<String> splitToWords (String data) {

@@ -44,10 +44,8 @@ public class UtilTest {
     }
 
     @Test
-    public void chooseTest () {
-        assertEquals(choose(5, 2), 10);
-        assertEquals(choose(0, 0), 1);
-        assertEquals(choose(5, 6), 0);
-        assertEquals(choose(6, 3), 20);
+    public void combinationsTest () {
+        assertEquals(orderedGramsUpto(List.of("a", "b", "c", "d"), 2).size(), computeSize(4, 2));
+        assertEquals(computeSize(4, 2), 3);
     }
 }
