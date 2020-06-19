@@ -52,13 +52,16 @@ public class AppConfig {
     }
 
     public @Bean String splitDelimiters () {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (char c = 0; c < 255; c++) {
-            if (isAlphabet(c) || Character.isDigit(c))
-                continue;
-            stringBuilder.append(c);
-        }
-        return stringBuilder.toString();
+
+        return ",.;'\"|:-!@_=\\[]{}()<>?~`&*=+/";
+
+//        StringBuilder stringBuilder = new StringBuilder();
+//        for (char c = 0; c < 255; c++) {
+//            if (isAlphabet(c) || Character.isDigit(c))
+//                continue;
+//            stringBuilder.append(c);
+//        }
+//        return stringBuilder.toString();
     }
 
     public @Bean
@@ -84,10 +87,10 @@ public class AppConfig {
     }
 
     public @Bean
-    PopularityTrie<Character> wordCompleteTrie (KVStore kvStore) {
+    PopularityTrie<Integer> wordCompleteTrie (KVStore kvStore) {
         return PopularityTrie.getInstance
                 (kvStore, "wc-1", 1, 2, 2,
-                        charNodeType);
+                        intNodeType);
     }
 
     public @Bean
