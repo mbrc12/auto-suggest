@@ -23,15 +23,9 @@ public class PopTrieTest {
     private @Autowired String appName;
 
     @Test
-    public void helperTestForInverses1() {
-        String original = "Hello World!";
-        assertEquals(original, asString(asCharacterList(original)));
-    }
-
-    @Test
-    public void helperTestForInverses2() {
-        List<Character> original = List.of('H', 'e', 'l', 'l', 'o', '!');
-        assertEquals(original.toString(), asCharacterList(asString(original)).toString());
+    public void inverseHelpers () {
+        String test = "\uD83D\uDE02华语胡西它尔ひらがなabcdʊmlaʊtallécher";
+        assertEquals(asString(asIntegerList(test)), test);
     }
 
     @Test

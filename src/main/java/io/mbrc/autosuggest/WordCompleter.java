@@ -7,18 +7,18 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedList;
 import java.util.List;
 
-import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
+import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asIntegerList;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asString;
 
 @Slf4j
 @Service
 public class WordCompleter {
 
-    private final PopularityTrie<Character> wordCompleteTrie;
+    private final PopularityTrie<Integer> wordCompleteTrie;
 
     private final AppConfig appConfig;
 
-    WordCompleter (PopularityTrie<Character> wordCompleteTrie,
+    WordCompleter (PopularityTrie<Integer> wordCompleteTrie,
                    AppConfig appConfig) {
         this.wordCompleteTrie = wordCompleteTrie;
         this.appConfig = appConfig;
@@ -27,7 +27,7 @@ public class WordCompleter {
     public List<String> complete (String word) {
         final List<String> results = new LinkedList<>();
 
-        wordCompleteTrie.completionsOfPath(asCharacterList(word))
+        wordCompleteTrie.completionsOfPath(asIntegerList(word))
                 .forEach(completion -> results.add(asString(completion.getPath())));
 
         return results;

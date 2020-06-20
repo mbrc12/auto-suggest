@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class Util {
 
     public static Type stringSuggestionsType = new TypeToken<Suggestions<String>>(){}.getType();
-    public static Type charNodeType = new TypeToken<Node<Character>>(){}.getType();
+    public static Type intNodeType = new TypeToken<Node<Integer>>(){}.getType();
     public static Type stringNodeType = new TypeToken<Node<String>>(){}.getType();
 
     public static <T> List<LinkedList<T>> orderedCombinations(List<T> list, int K) {
@@ -130,8 +130,13 @@ public class Util {
         return false;
     }
 
+    public static boolean isEnglish (int c) {
+        return c <= (int)'z';
+    }
+
     public static String stringCleaner (String str) {
-        return str.replaceAll("\\P{Print}", "");
+        return str; // Do not clean right now
+//        return str.replaceAll("\\P{Print}", "");
     }
 
     public static long choose (int n, int r) {

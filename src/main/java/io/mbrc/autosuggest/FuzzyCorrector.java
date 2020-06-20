@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import static io.mbrc.autosuggest.Util.editDistance;
+import static io.mbrc.autosuggest.Util.isEnglish;
+import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asIntegerList;
 
 @Slf4j
 @Service
@@ -34,6 +36,15 @@ public class FuzzyCorrector {
     }
 
     public List<String> correct (String word) {
+
+        // Return only this word if the word is not in english character
+        // set because cannot compute phonetic encoding effectively
+
+        for (int codePoint : asIntegerList(word)) {
+            if (!isEnglish(codePoint))
+                return List.of(word);
+        }
+
         String encoded = hashFunction.apply(word);
         log.debug("--> ? {}", encoded);
 

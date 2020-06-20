@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Predicate;
 
 import static io.mbrc.autosuggest.Util.*;
-import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asCharacterList;
+import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asIntegerList;
 
 @Slf4j
 @Service
@@ -29,7 +29,7 @@ public class IngestTask {
     private final ReadWriteLock readWriteLock;
 
     private final PopularityMap<String> fuzzyCorrectMap;
-    private final PopularityTrie<Character> wordCompleteTrie;
+    private final PopularityTrie<Integer> wordCompleteTrie;
     private final PopularityTrie<String> tagSuggestTrie;
     private final Predicate<String> ignorableChecker;
 
@@ -42,7 +42,7 @@ public class IngestTask {
     @Autowired
     IngestTask (ReadWriteLock readWriteLock,
                 PopularityMap<String> fuzzyCorrectMap,
-                PopularityTrie<Character> wordCompleteTrie,
+                PopularityTrie<Integer> wordCompleteTrie,
                 PopularityTrie<String> tagSuggestTrie,
                 Predicate<String> ignorableChecker,
                 String splitDelimiters,
@@ -110,7 +110,7 @@ public class IngestTask {
         words.forEach(word -> fuzzyCorrectMap.insert(word, insertType));
 
         words.forEach(
-                word -> wordCompleteTrie.insert(asCharacterList(word), insertType));
+                word -> wordCompleteTrie.insert(asIntegerList(word), insertType));
 
         phrases.forEach(phrase -> tagSuggestTrie.insert(phrase, insertType));
     }
