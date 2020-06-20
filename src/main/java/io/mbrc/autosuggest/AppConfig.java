@@ -53,7 +53,7 @@ public class AppConfig {
 
     public @Bean String splitDelimiters () {
 
-        return ",.;'\"|:-!@_=\\[]{}()<>?~`&*=+/";
+        return ",.;'\"|:-!@_=\\[]{}()<>?~`&*=+/ ";
 
 //        StringBuilder stringBuilder = new StringBuilder();
 //        for (char c = 0; c < 255; c++) {
