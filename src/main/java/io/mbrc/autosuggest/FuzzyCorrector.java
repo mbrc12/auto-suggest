@@ -27,11 +27,10 @@ public class FuzzyCorrector {
 
     @Autowired
     FuzzyCorrector (PopularityMap<String> fuzzyCorrectMap,
-                    Function<String, String> hashFunction,
                     AppConfig appConfig) {
 
         this.fuzzyCorrectMap = fuzzyCorrectMap;
-        this.hashFunction = hashFunction;
+        this.hashFunction = Services.hashFunction();
         this.appConfig = appConfig;
     }
 

@@ -45,39 +45,11 @@ public class AppConfig {
         return new ReentrantReadWriteLock(true);
     }
 
-    public @Bean String splitDelimiters () {
-
-        return ",.;'\"|:-!@_=\\[]{}()<>?~`&*=+/ ";
-
-//        StringBuilder stringBuilder = new StringBuilder();
-//        for (char c = 0; c < 255; c++) {
-//            if (isAlphabet(c) || Character.isDigit(c))
-//                continue;
-//            stringBuilder.append(c);
-//        }
-//        return stringBuilder.toString();
-    }
-
     public @Bean
-    Function<String, String> hashFunction () {
-        Soundex soundex = new Soundex();
-        return string -> {
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < string.length(); i++) {
-                char current = string.charAt(i);
-                if (isAlphabet(current))
-                    builder.append(current);
-            }
-
-            return soundex.encode(builder.toString());
-        };
-    }
-
-    public @Bean
-    PopularityMap<String> fuzzyCorrectMap (KVStore kvStore, Function<String, String> hashFunction) {
+    PopularityMap<String> fuzzyCorrectMap (KVStore kvStore) {
         return PopularityMap.getInstance
                 (kvStore, "fz-1", 1, 2, 2,
-                        hashFunction, stringSuggestionsType);
+                        Services.hashFunction(), stringSuggestionsType);
     }
 
     public @Bean
@@ -94,42 +66,6 @@ public class AppConfig {
                         stringNodeType);
     }
 
-    public @Bean
-    Predicate<String> ignorableChecker () throws IOException {
-
-        final Set<String> ignoredWords = new HashSet<>();
-
-        BufferedReader reader =
-                new BufferedReader(
-                        new InputStreamReader(
-                                new ClassPathResource("low_info_words.txt").getInputStream()));
-
-        while (true) {
-            try {
-                String token = reader.readLine().strip().toLowerCase();
-                ignoredWords.add(token);
-                log.debug("Ignored word: {}", token);
-            } catch (Exception e) {
-                break;
-            }
-        }
-//        String contents = Files.readString(
-//                Path.of(new ClassPathResource("low_info_words.txt")
-//                        .getFile()
-//                        .getAbsolutePath()));
-//
-//        StringTokenizer tokens = new StringTokenizer(contents);
-//        while (tokens.hasMoreTokens()) {
-//            ignoredWords.add(tokens.nextToken().toLowerCase());
-//        }
-
-        final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
-
-        return word -> {
-            if (ignoredWords.contains(word)) return true;
-            return pattern.matcher(word).matches();
-        };
-    }
 
     public Integer getMaxWordsInPhrase() {
         return this.maxWordsInPhrase;

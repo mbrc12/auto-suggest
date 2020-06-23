@@ -43,8 +43,6 @@ public class IngestTask {
                 PopularityMap<String> fuzzyCorrectMap,
                 PopularityTrie<Integer> wordCompleteTrie,
                 PopularityTrie<String> tagSuggestTrie,
-                Predicate<String> ignorableChecker,
-                String splitDelimiters,
                 AppConfig config) {
 
         this.readWriteLock = readWriteLock;
@@ -52,14 +50,15 @@ public class IngestTask {
         this.fuzzyCorrectMap = fuzzyCorrectMap;
         this.wordCompleteTrie = wordCompleteTrie;
         this.tagSuggestTrie = tagSuggestTrie;
-        this.ignorableChecker = ignorableChecker;
+
+        this.ignorableChecker = Services.ignorableChecker();
 
         this.config = config;
         this.queue = new LinkedBlockingDeque<>();
 
         this.finishLatch = new CountDownLatch(1);
 
-        this.splitDelimiters = splitDelimiters;
+        this.splitDelimiters = Services.splitDelimiters;
 
         Thread workerThread = new Thread(this::worker);
         workerThread.start();

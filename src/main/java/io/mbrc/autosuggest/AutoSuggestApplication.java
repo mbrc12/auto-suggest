@@ -10,9 +10,4 @@ public class AutoSuggestApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AutoSuggestApplication.class, args);
 	}
-
-	public @Bean
-	String appName () {
-		return "auto-suggest";
-	}
 }

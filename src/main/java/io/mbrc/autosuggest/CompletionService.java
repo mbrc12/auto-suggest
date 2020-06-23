@@ -29,7 +29,6 @@ public class CompletionService {
                        FuzzyCorrector fuzzyCorrector,
                        WordCompleter wordCompleter,
                        TagSuggestor tagSuggestor,
-                       Predicate<String> ignorableChecker,
                        AppConfig appConfig) {
 
         this.readWriteLock = readWriteLock;
@@ -37,7 +36,7 @@ public class CompletionService {
         this.fuzzyCorrector = fuzzyCorrector;
         this.wordCompleter = wordCompleter;
         this.tagSuggestor = tagSuggestor;
-        this.ignorableChecker = ignorableChecker;
+        this.ignorableChecker = Services.ignorableChecker();
 
         this.appConfig = appConfig;
         this.maxCompletions = appConfig.getMaxCompletions();
