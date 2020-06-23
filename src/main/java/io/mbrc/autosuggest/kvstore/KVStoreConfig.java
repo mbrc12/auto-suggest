@@ -24,6 +24,8 @@ public class KVStoreConfig {
     private String persistFinishSymbol;
     private Integer commitBatchSize;
 
+    public Long maximumWeight;
+
     public String getPersistDb() {
         return this.persistDb;
     }
@@ -63,4 +65,13 @@ public class KVStoreConfig {
     public void setCommitBatchSize(Integer commitBatchSize) {
         this.commitBatchSize = commitBatchSize;
     }
+
+    public Long getMaximumWeight() {
+        return maximumWeight;
+    }
+
+    public void setMaximumWeight(Long maximumWeight) {
+        this.maximumWeight = maximumWeight;
+    }
+
 }

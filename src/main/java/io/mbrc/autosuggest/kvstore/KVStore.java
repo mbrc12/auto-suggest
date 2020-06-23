@@ -1,13 +1,10 @@
 package io.mbrc.autosuggest.kvstore;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
@@ -17,9 +14,8 @@ public class KVStore {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(KVStore.class);
     private final Gson gson;
-    private final RedisTemplate<String, String> redisTemplate;
-    private final ValueOperations<String, String> redisValueOperations;
-    private final HashOperations<String, String, String> redisHashOperations;
+
+    private final Cache<String, String> cache;
 
     private final PersistenceTask persistenceTask;
 
@@ -27,23 +23,15 @@ public class KVStore {
 
     @Autowired
     KVStore (Gson gson,
-             RedisConnectionFactory redisConnectionFactory,
-             PersistenceTask persistenceTask) {
+             PersistenceTask persistenceTask,
+             KVStoreConfig kvStoreConfig) {
         this.gson = gson;
-
-        this.redisTemplate = new RedisTemplate<>();
-        this.redisTemplate.setConnectionFactory(redisConnectionFactory);
-        this.redisTemplate.setKeySerializer(new StringRedisSerializer());
-        this.redisTemplate.setValueSerializer(new StringRedisSerializer());
-        this.redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        this.redisTemplate.setHashValueSerializer(new StringRedisSerializer());
-        this.redisTemplate.afterPropertiesSet();
-
-
-        this.redisValueOperations = this.redisTemplate.opsForValue();
-        this.redisHashOperations = this.redisTemplate.opsForHash();
-
         this.persistenceTask = persistenceTask;
+
+        this.cache = CacheBuilder.newBuilder()
+                .maximumWeight(kvStoreConfig.getMaximumWeight())
+                .weigher((String key, String value) -> key.length() + value.length())
+                .build();
     }
 
     public <T> void insert (String key, T value) {
@@ -51,7 +39,7 @@ public class KVStore {
         log.debug("Repr = {}", repr);
 
         synchronized (mutex) {
-            redisValueOperations.set(key, repr);
+            cache.put(key, repr);
             try {
                 persistenceTask.insert(key, repr);
             } catch (InterruptedException e) {
@@ -66,7 +54,7 @@ public class KVStore {
         log.debug("Repr = {}", repr);
 
         synchronized (mutex) {
-            redisHashOperations.put(key, assoc, repr);
+            cache.put(cacheAssocKey(key, assoc), repr);
             try {
                 persistenceTask.insert(persistenceAssocKey(key, assoc), repr);
             } catch (InterruptedException e) {
@@ -77,15 +65,15 @@ public class KVStore {
     }
 
     private String query (String key) {
-        String repr = redisValueOperations.get(key);
+        String repr = cache.getIfPresent(key);
 
         if (repr == null) {
             synchronized (mutex) {
-                repr = redisValueOperations.get(key);
+                repr = cache.getIfPresent(key);
                 if (repr == null) {
                     repr = persistenceTask.query(key);
                     if (repr != null)
-                        redisValueOperations.set(key, repr);
+                        cache.put(key, repr);
                 }
             }
         }
@@ -94,15 +82,16 @@ public class KVStore {
     }
 
     private String queryAssoc (String key, String assoc) {
-        String repr = redisHashOperations.get(key, assoc);
+        final String cacheKey = cacheAssocKey(key, assoc);
+        String repr = cache.getIfPresent(cacheKey);
 
         if (repr == null) {
             synchronized (mutex) {
-                repr = redisHashOperations.get(key, assoc);
+                repr = cache.getIfPresent(cacheKey);
                 if (repr == null) {
                     repr = persistenceTask.query(persistenceAssocKey(key, assoc));
                     if (repr != null) {
-                        redisHashOperations.put(key, assoc, repr);
+                        cache.put(cacheKey, repr);
                     }
                 }
             }
@@ -146,7 +135,12 @@ public class KVStore {
     }
 
     // ensure that key never has '#'
-    private String persistenceAssocKey (String key, String assoc) {
+    private static String persistenceAssocKey (String key, String assoc) {
+        assert !key.contains("#");
+        return key + "#" + assoc;
+    }
+
+    private static String cacheAssocKey (String key, String assoc) {
         assert !key.contains("#");
         return key + "#" + assoc;
     }
