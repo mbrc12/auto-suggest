@@ -1,13 +1,10 @@
 package io.mbrc.autosuggest.popmap;
 
 import com.google.gson.annotations.SerializedName;
-import lombok.Data;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 
-@Data
 public class Suggestions<T> {
 
     // List of suggestions sorted in descending order by popularity
@@ -42,5 +39,9 @@ public class Suggestions<T> {
         while (suggestions.size() > maxRank) {
             suggestions.pollLast();
         }
+    }
+
+    public LinkedList<Suggestion<T>> getSuggestions() {
+        return this.suggestions;
     }
 }

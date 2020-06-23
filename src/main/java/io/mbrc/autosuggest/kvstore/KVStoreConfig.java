@@ -1,18 +1,16 @@
 package io.mbrc.autosuggest.kvstore;
 
 import com.google.gson.Gson;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
-@Data
-@Slf4j
 @Configuration
 @ConfigurationProperties(prefix = "kvstore")
 public class KVStoreConfig {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(KVStoreConfig.class);
 
     public @Bean
     Gson gson () {
@@ -25,4 +23,44 @@ public class KVStoreConfig {
     private String persistPrefix;
     private String persistFinishSymbol;
     private Integer commitBatchSize;
+
+    public String getPersistDb() {
+        return this.persistDb;
+    }
+
+    public String getPersistCollection() {
+        return this.persistCollection;
+    }
+
+    public String getPersistPrefix() {
+        return this.persistPrefix;
+    }
+
+    public String getPersistFinishSymbol() {
+        return this.persistFinishSymbol;
+    }
+
+    public Integer getCommitBatchSize() {
+        return this.commitBatchSize;
+    }
+
+    public void setPersistDb(String persistDb) {
+        this.persistDb = persistDb;
+    }
+
+    public void setPersistCollection(String persistCollection) {
+        this.persistCollection = persistCollection;
+    }
+
+    public void setPersistPrefix(String persistPrefix) {
+        this.persistPrefix = persistPrefix;
+    }
+
+    public void setPersistFinishSymbol(String persistFinishSymbol) {
+        this.persistFinishSymbol = persistFinishSymbol;
+    }
+
+    public void setCommitBatchSize(Integer commitBatchSize) {
+        this.commitBatchSize = commitBatchSize;
+    }
 }

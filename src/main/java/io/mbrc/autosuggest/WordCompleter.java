@@ -1,7 +1,7 @@
 package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -10,10 +10,10 @@ import java.util.List;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asIntegerList;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asString;
 
-@Slf4j
 @Service
 public class WordCompleter {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(WordCompleter.class);
     private final PopularityTrie<Integer> wordCompleteTrie;
 
     private final AppConfig appConfig;

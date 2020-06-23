@@ -1,16 +1,15 @@
 package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.kvstore.KVStore;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class CLI implements CommandLineRunner{
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(CLI.class);
     private @Autowired KVStore kvStore;
     private @Autowired IngestTask ingestTask;
 
@@ -37,8 +36,45 @@ public class CLI implements CommandLineRunner{
 
     }
 
-    @Data
     public static class Greet {
         private String name;
+
+        public Greet() {
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public boolean equals(final Object o) {
+            if (o == this) return true;
+            if (!(o instanceof Greet)) return false;
+            final Greet other = (Greet) o;
+            if (!other.canEqual((Object) this)) return false;
+            final Object this$name = this.getName();
+            final Object other$name = other.getName();
+            if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
+            return true;
+        }
+
+        protected boolean canEqual(final Object other) {
+            return other instanceof Greet;
+        }
+
+        public int hashCode() {
+            final int PRIME = 59;
+            int result = 1;
+            final Object $name = this.getName();
+            result = result * PRIME + ($name == null ? 43 : $name.hashCode());
+            return result;
+        }
+
+        public String toString() {
+            return "CLI.Greet(name=" + this.getName() + ")";
+        }
     }
 }

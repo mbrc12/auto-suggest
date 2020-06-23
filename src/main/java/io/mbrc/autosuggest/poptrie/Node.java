@@ -1,13 +1,12 @@
 package io.mbrc.autosuggest.poptrie;
 
 import com.google.gson.annotations.SerializedName;
-import lombok.Data;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Objects;
 
 // TODO: Reanalyse later if an LinkedList is the correct implementation
-@Data
 public class Node<T> {
 
     @SerializedName("c")
@@ -53,5 +52,49 @@ public class Node<T> {
 
         while (completions.size() > maxRank)
             completions.pollLast();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node<?> node = (Node<?>) o;
+        return parent == node.parent &&
+                popularity == node.popularity &&
+                Objects.equals(completions, node.completions) &&
+                Objects.equals(edgeFrom, node.edgeFrom);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(completions, parent, popularity, edgeFrom);
+    }
+
+    public LinkedList<IntPair> getCompletions() {
+        return this.completions;
+    }
+
+    public int getParent() {
+        return this.parent;
+    }
+
+    public int getPopularity() {
+        return this.popularity;
+    }
+
+    public T getEdgeFrom() {
+        return this.edgeFrom;
+    }
+
+    public void setCompletions(LinkedList<IntPair> completions) {
+        this.completions = completions;
+    }
+
+    public void setPopularity(int popularity) {
+        this.popularity = popularity;
+    }
+
+    public void setEdgeFrom(T edgeFrom) {
+        this.edgeFrom = edgeFrom;
     }
 }

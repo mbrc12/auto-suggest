@@ -1,14 +1,12 @@
 package io.mbrc.autosuggest.kvstore;
 
 import com.mongodb.MongoException;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
-import lombok.Synchronized;
-import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -23,10 +21,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public class PersistenceTask implements DisposableBean {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(PersistenceTask.class);
     private final MongoClient mongoClient;
     private final String persistDb;
     private final String persistCollection;

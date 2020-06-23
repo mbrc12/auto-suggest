@@ -3,7 +3,7 @@ package io.mbrc.autosuggest;
 import io.mbrc.autosuggest.popmap.PopularityMap;
 import io.mbrc.autosuggest.popmap.Suggestion;
 import io.mbrc.autosuggest.popmap.Suggestions;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +16,10 @@ import static io.mbrc.autosuggest.Util.editDistance;
 import static io.mbrc.autosuggest.Util.isEnglish;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asIntegerList;
 
-@Slf4j
 @Service
 public class FuzzyCorrector {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(FuzzyCorrector.class);
     private final PopularityMap<String> fuzzyCorrectMap;
     private final Function<String, String> hashFunction;
 

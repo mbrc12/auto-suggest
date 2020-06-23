@@ -1,13 +1,12 @@
 package io.mbrc.autosuggest.popmap;
 
-import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.kvstore.KVStore;
 
 import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static io.mbrc.autosuggest.Util.*;
+import static io.mbrc.autosuggest.Util.InsertType;
 
 // The use of this structure is to keep a persisted
 // collection of objects, which are hashed by a provided

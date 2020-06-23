@@ -1,20 +1,17 @@
 package io.mbrc.autosuggest;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 
-@Slf4j
 @Service
 public class CompletionService {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(CompletionService.class);
     private static String delimiter = " ";
 
     private final ReadWriteLock readWriteLock;
@@ -130,7 +127,6 @@ public class CompletionService {
         }
     }
 
-    @Getter
     private static class ResultCollection {
         final List<String> results;
         final Set<String> resultsSet;
@@ -149,6 +145,14 @@ public class CompletionService {
 
         int size () {
             return results.size();
+        }
+
+        public List<String> getResults() {
+            return this.results;
+        }
+
+        public Set<String> getResultsSet() {
+            return this.resultsSet;
         }
     }
 

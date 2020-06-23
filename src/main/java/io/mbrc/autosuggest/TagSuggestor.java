@@ -1,7 +1,7 @@
 package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +10,10 @@ import java.util.List;
 
 import static io.mbrc.autosuggest.Util.*;
 
-@Slf4j
 @Service
 public class TagSuggestor {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(TagSuggestor.class);
     private final PopularityTrie<String> tagSuggestTrie;
 
     private final AppConfig appConfig;
