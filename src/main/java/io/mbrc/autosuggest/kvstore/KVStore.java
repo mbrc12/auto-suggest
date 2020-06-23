@@ -1,10 +1,7 @@
 package io.mbrc.autosuggest.kvstore;
 
 import com.google.gson.Gson;
-import lombok.Data;
-import lombok.Synchronized;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.HashOperations;
@@ -15,10 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
 
-@Slf4j
 @Component
 public class KVStore {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(KVStore.class);
     private final Gson gson;
     private final RedisTemplate<String, String> redisTemplate;
     private final ValueOperations<String, String> redisValueOperations;
@@ -154,8 +151,7 @@ public class KVStore {
         return key + "#" + assoc;
     }
 
-    @Synchronized
-    public void shutdown () throws Exception {
+    synchronized public void shutdown () throws Exception {
         persistenceTask.destroy();
     }
 }

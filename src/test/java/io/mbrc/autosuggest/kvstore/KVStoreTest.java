@@ -1,7 +1,7 @@
 package io.mbrc.autosuggest.kvstore;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
@@ -15,11 +15,11 @@ import java.util.concurrent.TimeUnit;
 import static io.mbrc.autosuggest.Util.rangeList;
 import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
 @Component
 @SpringBootTest
 public class KVStoreTest {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(KVStoreTest.class);
     private @Autowired KVStore kvStore;
 
     @Test

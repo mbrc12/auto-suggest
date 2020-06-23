@@ -20,8 +20,6 @@ public class PopTrieTest {
     private @Autowired
     KVStore kvStore;
 
-    private @Autowired String appName;
-
     @Test
     public void inverseHelpers () {
         String test = "\uD83D\uDE02华语胡西它尔ひらがなabcdʊmlaʊtallécher";

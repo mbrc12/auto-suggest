@@ -1,23 +1,23 @@
 package io.mbrc.autosuggest.popmap;
 
 import io.mbrc.autosuggest.Util;
+import io.mbrc.autosuggest.encoder.Soundex;
 import io.mbrc.autosuggest.kvstore.KVStore;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.language.Soundex;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
 
 import static io.mbrc.autosuggest.Util.stringSuggestionsType;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Slf4j
 @Component
 @SpringBootTest
 public class PopMapTest {
 
     private final static Soundex soundex = new Soundex();
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(PopMapTest.class);
 
     private @Autowired
     KVStore kvStore;

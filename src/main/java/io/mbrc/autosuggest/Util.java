@@ -3,11 +3,9 @@ package io.mbrc.autosuggest;
 import com.google.gson.reflect.TypeToken;
 import io.mbrc.autosuggest.popmap.Suggestions;
 import io.mbrc.autosuggest.poptrie.Node;
-import org.springframework.context.annotation.Bean;
 
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Util {

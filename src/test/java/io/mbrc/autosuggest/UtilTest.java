@@ -1,7 +1,7 @@
 package io.mbrc.autosuggest;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
 
@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.mbrc.autosuggest.Util.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Slf4j
 @Component
 @SpringBootTest
 public class UtilTest {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(UtilTest.class);
 
     @Test
     public void editDistanceTest () {

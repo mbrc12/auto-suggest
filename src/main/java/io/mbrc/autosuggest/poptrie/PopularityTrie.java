@@ -1,17 +1,17 @@
 package io.mbrc.autosuggest.poptrie;
 
 import io.mbrc.autosuggest.kvstore.KVStore;
-import lombok.Synchronized;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-
+import org.slf4j.Logger;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static io.mbrc.autosuggest.Util.*;
+import static io.mbrc.autosuggest.Util.InsertType;
 
 // IMPORTANT: All T's used should have a good support for
 // HashMap keys and Gson serialization. The expected
@@ -32,12 +32,12 @@ import static io.mbrc.autosuggest.Util.*;
 /* TODO: Rewrite this whole thing using Optional<T> like PopularityMap
  */
 
-@Slf4j
 public class PopularityTrie <T> {
 
     private final static Integer startingPopularity = 0;
     private final static String currentIdKey = "currentId";
     private final static String associatedHashMapPrefix = "$";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(PopularityTrie.class);
 
     private final int occurrenceIncrement;
     private final int selectionIncrement;
@@ -103,7 +103,7 @@ public class PopularityTrie <T> {
         return tree;
     }
 
-    @Synchronized
+    synchronized
     private int nextIndex () {
         int index = currentId.incrementAndGet();
         kvStore.insert(prefixed(currentIdKey), currentId.get());
@@ -251,10 +251,26 @@ public class PopularityTrie <T> {
     }
 
 
-    @Value
-    public static class Completion<T> {
-        int score;
-        List<T> path;
+    public static final class Completion<T> {
+        private final int score;
+        private final List<T> path;
+
+        public Completion(int score, List<T> path) {
+            this.score = score;
+            this.path = path;
+        }
+
+        public int getScore() {
+            return this.score;
+        }
+
+        public List<T> getPath() {
+            return this.path;
+        }
+
+        public String toString() {
+            return "PopularityTrie.Completion(score=" + this.getScore() + ", path=" + this.getPath() + ")";
+        }
     }
 
     private int incrementOf (InsertType insertType) {

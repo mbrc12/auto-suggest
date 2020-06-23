@@ -2,8 +2,7 @@ package io.mbrc.autosuggest;
 
 import io.mbrc.autosuggest.popmap.PopularityMap;
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
-import lombok.Synchronized;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +17,13 @@ import java.util.function.Predicate;
 import static io.mbrc.autosuggest.Util.*;
 import static io.mbrc.autosuggest.poptrie.PopularityTrieHelper.asIntegerList;
 
-@Slf4j
 @Service
 public class IngestTask {
     
     private final static String insertPrefix = "i:";
     private final static String updatePrefix = "u:";
     private final static String finishPrefix = "f:";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(IngestTask.class);
 
     private final ReadWriteLock readWriteLock;
 
@@ -44,8 +43,6 @@ public class IngestTask {
                 PopularityMap<String> fuzzyCorrectMap,
                 PopularityTrie<Integer> wordCompleteTrie,
                 PopularityTrie<String> tagSuggestTrie,
-                Predicate<String> ignorableChecker,
-                String splitDelimiters,
                 AppConfig config) {
 
         this.readWriteLock = readWriteLock;
@@ -53,14 +50,15 @@ public class IngestTask {
         this.fuzzyCorrectMap = fuzzyCorrectMap;
         this.wordCompleteTrie = wordCompleteTrie;
         this.tagSuggestTrie = tagSuggestTrie;
-        this.ignorableChecker = ignorableChecker;
+
+        this.ignorableChecker = Services.ignorableChecker();
 
         this.config = config;
         this.queue = new LinkedBlockingDeque<>();
 
         this.finishLatch = new CountDownLatch(1);
 
-        this.splitDelimiters = splitDelimiters;
+        this.splitDelimiters = Services.splitDelimiters;
 
         Thread workerThread = new Thread(this::worker);
         workerThread.start();
@@ -183,7 +181,7 @@ public class IngestTask {
         }
     }
 
-    @Synchronized
+    synchronized
     public void shutdown () throws InterruptedException {
         log.info("Shutting down IngestTask..");
         queue.putLast(finishPrefix);
