@@ -1,6 +1,5 @@
 package io.mbrc.autosuggest;
 
-import io.mbrc.autosuggest.encoder.Soundex;
 import io.mbrc.autosuggest.kvstore.KVStore;
 import io.mbrc.autosuggest.popmap.PopularityMap;
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
@@ -8,18 +7,9 @@ import org.slf4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import static io.mbrc.autosuggest.Util.*;
 

@@ -16,8 +16,6 @@ package io.mbrc.autosuggest.encoder;
  * limitations under the License.
  */
 
-import io.mbrc.autosuggest.encoder.EncoderException;
-import io.mbrc.autosuggest.encoder.StringEncoder;
 /**
  * Encodes a string into a Soundex value. Soundex is an encoding used to relate similar names, but can also be used as a
  * general purpose scheme to find word with similar phonemes.

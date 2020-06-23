@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static io.mbrc.autosuggest.Util.*;
+import static io.mbrc.autosuggest.Util.isAlphabet;
 
 public class Services {
 
