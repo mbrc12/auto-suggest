@@ -2,6 +2,7 @@ package io.mbrc.autosuggest.kvstore;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,11 @@ import java.lang.reflect.Type;
 
 @Component
 public class KVStore {
+
+    // If we need DEBUG, change this to true, and add
+    // .recordStats() to CacheBuilder.newBuilder()
+
+    private static final boolean DEBUG = false;
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(KVStore.class);
     private final Gson gson;
@@ -78,6 +84,7 @@ public class KVStore {
             }
         }
 
+        showStats();
         return repr;
     }
 
@@ -97,6 +104,7 @@ public class KVStore {
             }
         }
 
+        showStats();
         return repr;
     }
 
@@ -143,6 +151,13 @@ public class KVStore {
     private static String cacheAssocKey (String key, String assoc) {
         assert !key.contains("#");
         return key + "#" + assoc;
+    }
+
+    private void showStats() {
+        if (DEBUG) {
+            CacheStats stats = cache.stats();
+            log.info("Stats: {}, {}, {}", stats.hitCount(), stats.missCount(), cache.asMap().size());
+        }
     }
 
     synchronized public void shutdown () throws Exception {
