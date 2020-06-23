@@ -1,9 +1,9 @@
 package io.mbrc.autosuggest;
 
+import io.mbrc.autosuggest.encoder.Soundex;
 import io.mbrc.autosuggest.kvstore.KVStore;
 import io.mbrc.autosuggest.popmap.PopularityMap;
 import io.mbrc.autosuggest.poptrie.PopularityTrie;
-import org.apache.commons.codec.language.Soundex;
 import org.slf4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

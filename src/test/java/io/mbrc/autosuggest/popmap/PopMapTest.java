@@ -1,8 +1,8 @@
 package io.mbrc.autosuggest.popmap;
 
 import io.mbrc.autosuggest.Util;
+import io.mbrc.autosuggest.encoder.Soundex;
 import io.mbrc.autosuggest.kvstore.KVStore;
-import org.apache.commons.codec.language.Soundex;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
