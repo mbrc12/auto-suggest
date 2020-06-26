@@ -104,6 +104,9 @@ public class CompletionService {
                                     ArrayList<List<String>> suggestedTokens,
                                     ResultCollection results) {
         if (index == suggestedTokens.size()) { // last position
+
+            log.info("current: {}, {}", current, tagSuggestor.suggest(current));
+
             for (List<String> tags : tagSuggestor.suggest(current)) {
 
                 // Completion size should not be lower than number of words typed

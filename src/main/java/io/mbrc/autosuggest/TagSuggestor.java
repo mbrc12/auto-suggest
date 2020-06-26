@@ -30,14 +30,18 @@ public class TagSuggestor {
 
     public List<List<String>> suggest (List<String> phrase) {
         int n = phrase.size();
-        List<LinkedList<Integer>> combinations = orderedCombinations(rangeList(0, n),
-                appConfig.getMaxWordsInPhrase());
+
+        List<LinkedList<Integer>> combinations = new LinkedList<>();
+
+        for (int i = 1; i < appConfig.getMaxWordsInPhrase(); i++) {
+            combinations.addAll(orderedCombinations(rangeList(0, n), i));
+        }
 
         // Order by decreasing sum, see Notes.md for rationale.
         combinations.sort((List<Integer> X, List<Integer> Y) -> {
             int totalX = 0, totalY = 0;
-            for (int e : X) totalX += e;
-            for (int e : Y) totalY += e;
+            for (int e : X) totalX += (e + 1);
+            for (int e : Y) totalY += (e + 1);
             return Integer.compare(totalY, totalX);
         });
 
@@ -47,6 +51,7 @@ public class TagSuggestor {
         result.add(phrase);
 
         for (List<Integer> phraseIndices : combinations) {
+            log.info("---> subPhrase: {}, {}", phraseIndices, selectIndices(phrase, phraseIndices));
             List<String> subPhrase = selectIndices(phrase, phraseIndices);
 
             tagSuggestTrie.completionsOfPath(subPhrase).forEach(
